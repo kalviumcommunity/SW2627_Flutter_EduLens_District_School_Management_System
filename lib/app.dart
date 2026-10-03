@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'core/theme/app_theme.dart';
 
 class EduLensApp extends StatelessWidget {
   const EduLensApp({super.key});
@@ -8,10 +9,7 @@ class EduLensApp extends StatelessWidget {
     return MaterialApp(
       title: 'EduLens',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        useMaterial3: true,
-      ),
+      theme: AppTheme.lightTheme,
       home: const Scaffold(
         body: Center(
           child: Text('Welcome to EduLens'),
