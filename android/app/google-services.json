@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "639009775699",
+    "project_id": "sw2627-s131-1-flutter-edulens",
+    "storage_bucket": "sw2627-s131-1-flutter-edulens.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:639009775699:android:8dd40afd6aa3cbfc78a6a6",
+        "android_client_info": {
+          "package_name": "com.example.my_flutter_edulens"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDmziHWXj5sctyXChETqdSKKeOR2FPW2D8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
