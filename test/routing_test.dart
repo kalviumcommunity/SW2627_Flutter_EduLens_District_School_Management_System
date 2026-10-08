@@ -5,12 +5,23 @@ import 'package:my_flutter_edulens/routes/app_routes.dart';
 
 void main() {
   group('EduLens Routing Tests', () {
-    testWidgets('Initial route renders Login placeholder', (WidgetTester tester) async {
+    testWidgets('Initial route renders LoginScreen', (WidgetTester tester) async {
       await tester.pumpWidget(const EduLensApp());
       await tester.pumpAndSettle();
 
-      expect(find.text('Login'), findsNWidgets(2));
-      expect(find.text('EduLens Role-Based Sign In'), findsOneWidget);
+      expect(find.text('EduLens'), findsOneWidget);
+      expect(find.text('Sign In'), findsOneWidget);
+    });
+
+    testWidgets('Navigates to Forgot Password route', (WidgetTester tester) async {
+      await tester.pumpWidget(const EduLensApp());
+      await tester.pumpAndSettle();
+
+      final BuildContext context = tester.element(find.byType(Scaffold));
+      Navigator.pushNamed(context, AppRoutes.forgotPassword);
+      await tester.pumpAndSettle();
+
+      expect(find.text('Reset Your Password'), findsOneWidget);
     });
 
     testWidgets('Navigates to District Dashboard route', (WidgetTester tester) async {
