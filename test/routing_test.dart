@@ -21,8 +21,7 @@ void main() {
       Navigator.pushNamed(context, AppRoutes.districtDashboard);
       await tester.pumpAndSettle();
 
-      expect(find.text('District Dashboard'), findsNWidgets(2));
-      expect(find.text('District Administrator View'), findsOneWidget);
+      expect(find.text('District Home'), findsOneWidget);
     });
 
     testWidgets('Navigates to School Admin Dashboard route', (WidgetTester tester) async {
@@ -33,7 +32,7 @@ void main() {
       Navigator.pushNamed(context, AppRoutes.schoolAdminDashboard);
       await tester.pumpAndSettle();
 
-      expect(find.text('School Admin Dashboard'), findsNWidgets(2));
+      expect(find.text('Students'), findsWidgets);
     });
 
     testWidgets('Navigates to Teacher Dashboard route', (WidgetTester tester) async {
@@ -44,7 +43,7 @@ void main() {
       Navigator.pushNamed(context, AppRoutes.teacherDashboard);
       await tester.pumpAndSettle();
 
-      expect(find.text('Teacher Dashboard'), findsNWidgets(2));
+      expect(find.text('Teacher Home'), findsOneWidget);
     });
 
     testWidgets('Navigates to Student Dashboard route', (WidgetTester tester) async {
@@ -55,7 +54,7 @@ void main() {
       Navigator.pushNamed(context, AppRoutes.studentDashboard);
       await tester.pumpAndSettle();
 
-      expect(find.text('Student Dashboard'), findsNWidgets(2));
+      expect(find.text('Student Home'), findsOneWidget);
     });
 
     testWidgets('Navigates to Profile route', (WidgetTester tester) async {

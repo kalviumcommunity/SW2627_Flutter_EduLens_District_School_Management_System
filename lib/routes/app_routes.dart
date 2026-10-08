@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import '../features/district/screens/district_shell.dart';
+import '../features/school_admin/screens/school_admin_shell.dart';
+import '../features/student/screens/student_shell.dart';
+import '../features/teacher/screens/teacher_shell.dart';
 
 abstract class AppRoutes {
   static const String login = '/login';
@@ -15,22 +19,10 @@ abstract class AppRoutes {
               title: 'Login',
               subtitle: 'EduLens Role-Based Sign In',
             ),
-        districtDashboard: (context) => const _PlaceholderScreen(
-              title: 'District Dashboard',
-              subtitle: 'District Administrator View',
-            ),
-        schoolAdminDashboard: (context) => const _PlaceholderScreen(
-              title: 'School Admin Dashboard',
-              subtitle: 'School Administrator View',
-            ),
-        teacherDashboard: (context) => const _PlaceholderScreen(
-              title: 'Teacher Dashboard',
-              subtitle: 'Teacher View',
-            ),
-        studentDashboard: (context) => const _PlaceholderScreen(
-              title: 'Student Dashboard',
-              subtitle: 'Student / Parent View',
-            ),
+        districtDashboard: (context) => const DistrictShell(),
+        schoolAdminDashboard: (context) => const SchoolAdminShell(),
+        teacherDashboard: (context) => const TeacherShell(),
+        studentDashboard: (context) => const StudentShell(),
         profile: (context) => const _PlaceholderScreen(
               title: 'Profile & Settings',
               subtitle: 'User Account Details',
