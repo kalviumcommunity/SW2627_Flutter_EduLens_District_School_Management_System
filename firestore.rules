@@ -1,0 +1,113 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function getUserData() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    function getUserRole() {
+      return getUserData().role;
+    }
+
+    function getUserSchoolId() {
+      return getUserData().schoolId;
+    }
+
+    function isDistrictAdmin() {
+      return isSignedIn() && (getUserRole() == 'districtAdmin' || getUserRole() == 'district_admin');
+    }
+
+    function isSchoolAdmin(schoolId) {
+      return isSignedIn() &&
+        (getUserRole() == 'schoolAdmin' || getUserRole() == 'school_admin') &&
+        getUserSchoolId() == schoolId;
+    }
+
+    function isTeacher(schoolId) {
+      return isSignedIn() &&
+        (getUserRole() == 'teacher') &&
+        getUserSchoolId() == schoolId;
+    }
+
+    function isStudent() {
+      return isSignedIn() && (getUserRole() == 'student');
+    }
+
+    // Collection match rules
+
+    // Users Collection
+    match /users/{userId} {
+      allow read: if isSignedIn() && (request.auth.uid == userId || isDistrictAdmin() || getUserSchoolId() == resource.data.schoolId);
+      allow create, update: if isSignedIn() && (request.auth.uid == userId || isDistrictAdmin() || isSchoolAdmin(request.resource.data.schoolId));
+      allow delete: if isDistrictAdmin();
+    }
+
+    // Schools Collection
+    match /schools/{schoolId} {
+      allow read: if isSignedIn() && (isDistrictAdmin() || getUserSchoolId() == schoolId);
+      allow write: if isSignedIn() && (isDistrictAdmin() || isSchoolAdmin(schoolId));
+    }
+
+    // Students Collection
+    match /students/{studentId} {
+      allow read: if isSignedIn() && (
+        isDistrictAdmin() ||
+        getUserSchoolId() == resource.data.schoolId ||
+        resource.data.studentId == request.auth.uid ||
+        studentId == request.auth.uid
+      );
+      allow write: if isSignedIn() && (
+        isDistrictAdmin() ||
+        isSchoolAdmin(request.resource.data.schoolId)
+      );
+    }
+
+    // Attendance Collection
+    match /attendance/{attendanceId} {
+      allow read: if isSignedIn() && (
+        isDistrictAdmin() ||
+        getUserSchoolId() == resource.data.schoolId ||
+        resource.data.studentId == request.auth.uid
+      );
+      allow create, update: if isSignedIn() && (
+        isDistrictAdmin() ||
+        isSchoolAdmin(request.resource.data.schoolId) ||
+        isTeacher(request.resource.data.schoolId)
+      );
+      allow delete: if isDistrictAdmin() || isSchoolAdmin(resource.data.schoolId);
+    }
+
+    // Fees Collection
+    match /fees/{feeId} {
+      allow read: if isSignedIn() && (
+        isDistrictAdmin() ||
+        getUserSchoolId() == resource.data.schoolId ||
+        resource.data.studentId == request.auth.uid
+      );
+      allow write: if isSignedIn() && (
+        isDistrictAdmin() ||
+        isSchoolAdmin(request.resource.data.schoolId)
+      );
+    }
+
+    // Exams Collection
+    match /exams/{examId} {
+      allow read: if isSignedIn() && (
+        isDistrictAdmin() ||
+        getUserSchoolId() == resource.data.schoolId
+      );
+      allow create, update: if isSignedIn() && (
+        isDistrictAdmin() ||
+        isSchoolAdmin(request.resource.data.schoolId) ||
+        isTeacher(request.resource.data.schoolId)
+      );
+      allow delete: if isDistrictAdmin() || isSchoolAdmin(resource.data.schoolId);
+    }
+  }
+}
