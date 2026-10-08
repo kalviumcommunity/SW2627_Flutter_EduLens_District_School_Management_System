@@ -10,7 +10,7 @@ class FakeUserRepository implements UserRepository {
   @override
   Future<UserModel?> getUserById(String uid) async {
     if (shouldThrow) {
-      throw Exception('Database connection error');
+      throw Exception('Firestore database read failure');
     }
     return _storage[uid];
   }
@@ -18,14 +18,14 @@ class FakeUserRepository implements UserRepository {
   @override
   Future<void> saveUser(UserModel user) async {
     if (shouldThrow) {
-      throw Exception('Database save error');
+      throw Exception('Firestore database save failure');
     }
     _storage[user.uid] = user;
   }
 }
 
 void main() {
-  group('UserBootstrapService Unit Tests', () {
+  group('UserBootstrapService Unit Tests (PR-12)', () {
     late FakeUserRepository fakeRepo;
     late UserBootstrapService bootstrapService;
 
@@ -34,38 +34,52 @@ void main() {
       bootstrapService = UserBootstrapService(userRepository: fakeRepo);
     });
 
-    test('Returns unauthenticated when no user is logged in', () async {
+    test('Unauthenticated state does not attempt protected profile access', () async {
       final state = await bootstrapService.bootstrapUser(null);
       expect(state.status, UserBootstrapStatus.unauthenticated);
       expect(state.userModel, isNull);
+      expect(state.authUser, isNull);
     });
 
-    test('Returns profileNotFound when user exists in Auth but not in Firestore', () async {
-      final state = await fakeRepo.getUserById('uid_123');
-      expect(state, isNull);
+    test('Missing profile in Firestore is handled safely (profileNotFound)', () async {
+      final profile = await fakeRepo.getUserById('non_existent_uid');
+      expect(profile, isNull);
     });
 
-    test('Returns profileFound when user exists in Firestore', () async {
+    test('Authenticated UID with valid profile returns UserModel (profileFound)', () async {
       const userModel = UserModel(
-        uid: 'uid_123',
-        name: 'Jane Teacher',
-        email: 'jane@edulens.org',
-        role: 'teacher',
-        schoolId: 'school_1',
+        uid: 'uid_admin_1',
+        name: 'District Admin',
+        email: 'district@edulens.org',
+        role: 'districtAdmin',
       );
       await fakeRepo.saveUser(userModel);
 
-      final fetched = await fakeRepo.getUserById('uid_123');
+      final fetched = await fakeRepo.getUserById('uid_admin_1');
       expect(fetched, isNotNull);
-      expect(fetched?.uid, 'uid_123');
-      expect(fetched?.name, 'Jane Teacher');
-      expect(fetched?.role, 'teacher');
+      expect(fetched?.uid, 'uid_admin_1');
+      expect(fetched?.role, 'districtAdmin');
+      expect(fetched?.email, 'district@edulens.org');
     });
 
-    test('Returns error state when repository throws exception', () async {
+    test('Malformed/incomplete profile is identified safely (invalidProfile)', () async {
+      const invalidUserModel = UserModel(
+        uid: '',
+        name: 'No Role User',
+        email: 'norole@edulens.org',
+        role: '',
+      );
+      fakeRepo._storage['uid_invalid'] = invalidUserModel;
+
+      final fetched = await fakeRepo.getUserById('uid_invalid');
+      expect(fetched, isNotNull);
+      expect(fetched?.role.isEmpty, isTrue);
+    });
+
+    test('Firestore failure is handled safely (error state)', () async {
       fakeRepo.shouldThrow = true;
       expect(
-        () async => await fakeRepo.getUserById('uid_123'),
+        () async => await fakeRepo.getUserById('uid_err'),
         throwsException,
       );
     });

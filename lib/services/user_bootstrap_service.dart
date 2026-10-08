@@ -9,6 +9,7 @@ enum UserBootstrapStatus {
   loading,
   profileFound,
   profileNotFound,
+  invalidProfile,
   error,
 }
 
@@ -51,6 +52,16 @@ class UserBootstrapState {
         authUser: authUser,
       );
 
+  factory UserBootstrapState.invalidProfile({
+    required User authUser,
+    required UserModel userModel,
+  }) =>
+      UserBootstrapState(
+        status: UserBootstrapStatus.invalidProfile,
+        authUser: authUser,
+        userModel: userModel,
+      );
+
   factory UserBootstrapState.error(String message, {User? authUser}) =>
       UserBootstrapState(
         status: UserBootstrapStatus.error,
@@ -83,6 +94,15 @@ class UserBootstrapService {
       if (profile == null) {
         return UserBootstrapState.profileNotFound(authUser: authUser);
       }
+
+      // Check for malformed or incomplete profile (missing role or UID)
+      if (profile.role.trim().isEmpty || profile.uid.trim().isEmpty) {
+        return UserBootstrapState.invalidProfile(
+          authUser: authUser,
+          userModel: profile,
+        );
+      }
+
       return UserBootstrapState.profileFound(
         authUser: authUser,
         userModel: profile,
