@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import '../features/auth/screens/forgot_password_screen.dart';
+import '../features/auth/screens/login_screen.dart';
+import '../features/auth/screens/reset_password_screen.dart';
 import '../features/district/screens/district_shell.dart';
 import '../features/school_admin/screens/school_admin_shell.dart';
 import '../features/student/screens/student_shell.dart';
@@ -6,6 +9,8 @@ import '../features/teacher/screens/teacher_shell.dart';
 
 abstract class AppRoutes {
   static const String login = '/login';
+  static const String forgotPassword = '/forgot-password';
+  static const String resetPassword = '/reset-password';
   static const String districtDashboard = '/district-dashboard';
   static const String schoolAdminDashboard = '/school-admin-dashboard';
   static const String teacherDashboard = '/teacher-dashboard';
@@ -15,10 +20,9 @@ abstract class AppRoutes {
   static const String initial = login;
 
   static Map<String, WidgetBuilder> get routes => {
-        login: (context) => const _PlaceholderScreen(
-              title: 'Login',
-              subtitle: 'EduLens Role-Based Sign In',
-            ),
+        login: (context) => const LoginScreen(),
+        forgotPassword: (context) => const ForgotPasswordScreen(),
+        resetPassword: (context) => const ResetPasswordScreen(),
         districtDashboard: (context) => const DistrictShell(),
         schoolAdminDashboard: (context) => const SchoolAdminShell(),
         teacherDashboard: (context) => const TeacherShell(),

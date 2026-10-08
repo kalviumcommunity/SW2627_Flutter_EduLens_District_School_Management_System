@@ -16,16 +16,39 @@ class AuthException implements Exception {
 /// Encapsulates direct interaction with [FirebaseAuth] and converts low-level
 /// SDK exception codes into user-friendly [AuthException] instances.
 class AuthService {
-  final FirebaseAuth _firebaseAuth;
+  final FirebaseAuth? _customFirebaseAuth;
 
   AuthService({FirebaseAuth? firebaseAuth})
-      : _firebaseAuth = firebaseAuth ?? FirebaseAuth.instance;
+      : _customFirebaseAuth = firebaseAuth;
+
+  FirebaseAuth get _firebaseAuth =>
+      _customFirebaseAuth ?? FirebaseAuth.instance;
 
   /// Stream emitting the current authenticated [User] or `null` if signed out.
-  Stream<User?> get authStateChanges => _firebaseAuth.authStateChanges();
+  Stream<User?> get authStateChanges {
+    final custom = _customFirebaseAuth;
+    if (custom != null) {
+      return custom.authStateChanges();
+    }
+    try {
+      return FirebaseAuth.instance.authStateChanges();
+    } catch (_) {
+      return const Stream.empty();
+    }
+  }
 
   /// Currently authenticated Firebase [User], if any.
-  User? get currentUser => _firebaseAuth.currentUser;
+  User? get currentUser {
+    final custom = _customFirebaseAuth;
+    if (custom != null) {
+      return custom.currentUser;
+    }
+    try {
+      return FirebaseAuth.instance.currentUser;
+    } catch (_) {
+      return null;
+    }
+  }
 
   /// Authenticates a user with email and password.
   Future<UserCredential> signInWithEmailAndPassword({
