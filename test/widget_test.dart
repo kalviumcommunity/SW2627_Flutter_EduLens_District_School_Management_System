@@ -5,8 +5,9 @@ void main() {
   testWidgets('EduLensApp smoke test', (WidgetTester tester) async {
     // Build our app and trigger a frame.
     await tester.pumpWidget(const EduLensApp());
+    await tester.pumpAndSettle();
 
-    // Verify that the welcome text is displayed.
-    expect(find.text('Welcome to EduLens'), findsOneWidget);
+    // Verify that the initial Login route is rendered.
+    expect(find.text('Login'), findsNWidgets(2));
   });
 }
