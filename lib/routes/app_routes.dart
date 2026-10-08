@@ -19,6 +19,23 @@ abstract class AppRoutes {
 
   static const String initial = login;
 
+  static String? getDashboardRouteForRole(String? role) {
+    if (role == null) return null;
+    final normalized = role.toLowerCase().replaceAll('_', '');
+    switch (normalized) {
+      case 'districtadmin':
+        return districtDashboard;
+      case 'schooladmin':
+        return schoolAdminDashboard;
+      case 'teacher':
+        return teacherDashboard;
+      case 'student':
+        return studentDashboard;
+      default:
+        return null;
+    }
+  }
+
   static Map<String, WidgetBuilder> get routes => {
         login: (context) => const LoginScreen(),
         forgotPassword: (context) => const ForgotPasswordScreen(),
