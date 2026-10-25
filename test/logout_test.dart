@@ -50,147 +50,160 @@ Widget _wrapShell(Widget shell) {
 
 void main() {
   group('Shared Logout Accessibility across all 4 Roles', () {
-    testWidgets('DistrictShell displays logout action and opens profile logout', (tester) async {
-      final authService = _FakeAuthService();
-      final loader = fakeDistrictLoader();
+    testWidgets(
+      'DistrictShell displays logout action and opens profile logout',
+      (tester) async {
+        final authService = _FakeAuthService();
+        final loader = fakeDistrictLoader();
 
-      await tester.pumpWidget(
-        _wrapShell(
-          DistrictShell(
-            loader: loader,
-            authService: authService,
-            administratorName: 'District Admin',
+        await tester.pumpWidget(
+          _wrapShell(
+            DistrictShell(
+              loader: loader,
+              authService: authService,
+              administratorName: 'District Admin',
+            ),
           ),
-        ),
-      );
-      await tester.pumpAndSettle();
+        );
+        await tester.pumpAndSettle();
 
-      expect(find.byKey(const Key('shell_logout_icon_button')), findsOneWidget);
+        expect(
+          find.byKey(const Key('shell_logout_icon_button')),
+          findsOneWidget,
+        );
 
-      // Open Profile Tab
-      await tester.tap(find.text('Profile'));
-      await tester.pumpAndSettle();
+        // Open Profile Tab
+        await tester.tap(find.text('Profile'));
+        await tester.pumpAndSettle();
 
-      expect(find.text('District Administrator'), findsOneWidget);
-      await tester.drag(find.byType(ListView).first, const Offset(0, -300));
-      await tester.pumpAndSettle();
-      expect(find.byKey(const Key('profile_logout_button')), findsOneWidget);
-    });
+        expect(find.text('District Administrator'), findsOneWidget);
+        await tester.drag(find.byType(ListView).first, const Offset(0, -300));
+        await tester.pumpAndSettle();
+        expect(find.byKey(const Key('profile_logout_button')), findsOneWidget);
+      },
+    );
 
-    testWidgets('SchoolAdminShell displays logout action and opens profile logout', (tester) async {
-      final authService = _FakeAuthService();
-      final schools = FakeSchoolRepository();
+    testWidgets(
+      'SchoolAdminShell displays logout action and opens profile logout',
+      (tester) async {
+        final authService = _FakeAuthService();
+        final schools = FakeSchoolRepository();
 
-      await tester.pumpWidget(
-        _wrapShell(
-          SchoolAdminShell(
-            authService: authService,
-            schoolRepository: schools,
-            schoolId: 's1',
-            administratorName: 'Principal',
+        await tester.pumpWidget(
+          _wrapShell(
+            SchoolAdminShell(
+              authService: authService,
+              schoolRepository: schools,
+              schoolId: 's1',
+              administratorName: 'Principal',
+            ),
           ),
-        ),
-      );
-      await tester.pumpAndSettle();
+        );
+        await tester.pumpAndSettle();
 
-      expect(find.byKey(const Key('shell_logout_icon_button')), findsOneWidget);
+        expect(
+          find.byKey(const Key('shell_logout_icon_button')),
+          findsOneWidget,
+        );
 
-      await tester.tap(find.text('Profile'));
-      await tester.pumpAndSettle();
+        await tester.tap(find.text('Profile'));
+        await tester.pumpAndSettle();
 
-      expect(find.text('School Administrator'), findsOneWidget);
-      await tester.drag(find.byType(ListView).first, const Offset(0, -300));
-      await tester.pumpAndSettle();
-      expect(find.byKey(const Key('profile_logout_button')), findsOneWidget);
-    });
+        expect(find.text('School Administrator'), findsOneWidget);
+        await tester.drag(find.byType(ListView).first, const Offset(0, -300));
+        await tester.pumpAndSettle();
+        expect(find.byKey(const Key('profile_logout_button')), findsOneWidget);
+      },
+    );
 
-    testWidgets('TeacherShell displays logout action and opens profile logout', (tester) async {
-      final authService = _FakeAuthService();
+    testWidgets(
+      'TeacherShell displays logout action and opens profile logout',
+      (tester) async {
+        final authService = _FakeAuthService();
 
-      await tester.pumpWidget(
-        _wrapShell(
-          TeacherShell(
-            authService: authService,
-            schoolId: 's1',
-          ),
-        ),
-      );
-      await tester.pumpAndSettle();
+        await tester.pumpWidget(
+          _wrapShell(TeacherShell(authService: authService, schoolId: 's1')),
+        );
+        await tester.pumpAndSettle();
 
-      expect(find.byKey(const Key('shell_logout_icon_button')), findsOneWidget);
+        expect(
+          find.byKey(const Key('shell_logout_icon_button')),
+          findsOneWidget,
+        );
 
-      await tester.tap(find.text('Profile'));
-      await tester.pumpAndSettle();
+        await tester.tap(find.text('Profile'));
+        await tester.pumpAndSettle();
 
-      expect(find.text('Teacher'), findsOneWidget);
-      await tester.drag(find.byType(ListView).first, const Offset(0, -300));
-      await tester.pumpAndSettle();
-      expect(find.byKey(const Key('profile_logout_button')), findsOneWidget);
-    });
+        expect(find.text('Teacher'), findsOneWidget);
+        await tester.drag(find.byType(ListView).first, const Offset(0, -300));
+        await tester.pumpAndSettle();
+        expect(find.byKey(const Key('profile_logout_button')), findsOneWidget);
+      },
+    );
 
-    testWidgets('StudentShell displays logout action and opens profile logout', (tester) async {
-      final authService = _FakeAuthService();
+    testWidgets(
+      'StudentShell displays logout action and opens profile logout',
+      (tester) async {
+        final authService = _FakeAuthService();
 
-      await tester.pumpWidget(
-        _wrapShell(
-          StudentShell(
-            authService: authService,
-            schoolId: 's1',
-          ),
-        ),
-      );
-      await tester.pumpAndSettle();
+        await tester.pumpWidget(
+          _wrapShell(StudentShell(authService: authService, schoolId: 's1')),
+        );
+        await tester.pumpAndSettle();
 
-      expect(find.byKey(const Key('shell_logout_icon_button')), findsOneWidget);
+        expect(
+          find.byKey(const Key('shell_logout_icon_button')),
+          findsOneWidget,
+        );
 
-      await tester.tap(find.text('Profile'));
-      await tester.pumpAndSettle();
+        await tester.tap(find.text('Profile'));
+        await tester.pumpAndSettle();
 
-      expect(find.text('Student'), findsOneWidget);
-      await tester.drag(find.byType(ListView).first, const Offset(0, -300));
-      await tester.pumpAndSettle();
-      expect(find.byKey(const Key('profile_logout_button')), findsOneWidget);
-    });
+        expect(find.text('Student'), findsOneWidget);
+        await tester.drag(find.byType(ListView).first, const Offset(0, -300));
+        await tester.pumpAndSettle();
+        expect(find.byKey(const Key('profile_logout_button')), findsOneWidget);
+      },
+    );
   });
 
   group('Logout Dialog, Navigation Clearing, and Failure Behavior', () {
-    testWidgets('confirms logout and returns to login screen, clearing nav stack', (tester) async {
-      final authService = _FakeAuthService();
+    testWidgets(
+      'confirms logout and returns to login screen, clearing nav stack',
+      (tester) async {
+        final authService = _FakeAuthService();
 
-      await tester.pumpWidget(
-        _wrapShell(
-          StudentShell(
-            authService: authService,
-            schoolId: 's1',
-          ),
-        ),
-      );
-      await tester.pumpAndSettle();
+        await tester.pumpWidget(
+          _wrapShell(StudentShell(authService: authService, schoolId: 's1')),
+        );
+        await tester.pumpAndSettle();
 
-      // Tap Top Bar Logout Icon
-      await tester.tap(find.byKey(const Key('shell_logout_icon_button')));
-      await tester.pumpAndSettle();
+        // Tap Top Bar Logout Icon
+        await tester.tap(find.byKey(const Key('shell_logout_icon_button')));
+        await tester.pumpAndSettle();
 
-      expect(find.text('Are you sure you want to log out of EduLens?'), findsOneWidget);
+        expect(
+          find.text('Are you sure you want to log out of EduLens?'),
+          findsOneWidget,
+        );
 
-      // Confirm Logout
-      await tester.tap(find.widgetWithText(AppButton, 'Log Out'));
-      await tester.pumpAndSettle();
+        // Confirm Logout
+        await tester.tap(find.widgetWithText(AppButton, 'Log Out'));
+        await tester.pumpAndSettle();
 
-      expect(authService.signOutCalls, 1);
-      expect(find.text('District School Management System'), findsOneWidget); // LoginScreen
-    });
+        expect(authService.signOutCalls, 1);
+        expect(
+          find.text('District School Management System'),
+          findsOneWidget,
+        ); // LoginScreen
+      },
+    );
 
     testWidgets('cancels logout dialog without signing out', (tester) async {
       final authService = _FakeAuthService();
 
       await tester.pumpWidget(
-        _wrapShell(
-          StudentShell(
-            authService: authService,
-            schoolId: 's1',
-          ),
-        ),
+        _wrapShell(StudentShell(authService: authService, schoolId: 's1')),
       );
       await tester.pumpAndSettle();
 
@@ -204,27 +217,28 @@ void main() {
       expect(find.text('Student Home'), findsNothing);
     });
 
-    testWidgets('sign-out failure shows error SnackBar without navigating away', (tester) async {
-      final authService = _FakeAuthService()..shouldFail = true;
+    testWidgets(
+      'sign-out failure shows error SnackBar without navigating away',
+      (tester) async {
+        final authService = _FakeAuthService()..shouldFail = true;
 
-      await tester.pumpWidget(
-        _wrapShell(
-          StudentShell(
-            authService: authService,
-            schoolId: 's1',
-          ),
-        ),
-      );
-      await tester.pumpAndSettle();
+        await tester.pumpWidget(
+          _wrapShell(StudentShell(authService: authService, schoolId: 's1')),
+        );
+        await tester.pumpAndSettle();
 
-      await tester.tap(find.byKey(const Key('shell_logout_icon_button')));
-      await tester.pumpAndSettle();
+        await tester.tap(find.byKey(const Key('shell_logout_icon_button')));
+        await tester.pumpAndSettle();
 
-      await tester.tap(find.widgetWithText(AppButton, 'Log Out'));
-      await tester.pumpAndSettle();
+        await tester.tap(find.widgetWithText(AppButton, 'Log Out'));
+        await tester.pumpAndSettle();
 
-      expect(authService.signOutCalls, 1);
-      expect(find.text('Failed to sign out. Please try again.'), findsOneWidget);
-    });
+        expect(authService.signOutCalls, 1);
+        expect(
+          find.text('Failed to sign out. Please try again.'),
+          findsOneWidget,
+        );
+      },
+    );
   });
 }
