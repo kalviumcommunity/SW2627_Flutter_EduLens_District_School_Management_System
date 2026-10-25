@@ -221,8 +221,14 @@ class _ExamDetailsScreenState extends State<ExamDetailsScreen> {
               ExamInfoRow(label: 'School', value: details.schoolName),
               ExamInfoRow(label: 'Class', value: exam.className),
               ExamInfoRow(label: 'Date', value: AppDate.formatLong(exam.date)),
-              ExamInfoRow(label: 'Start time', value: exam.startTime),
-              ExamInfoRow(label: 'End time', value: exam.endTime),
+              ExamInfoRow(
+                label: 'Start time',
+                value: AppDate.formatTime(exam.startTime),
+              ),
+              ExamInfoRow(
+                label: 'End time',
+                value: AppDate.formatTime(exam.endTime),
+              ),
               ExamInfoRow(
                 label: 'Total students',
                 value: '${details.totalStudents}',
