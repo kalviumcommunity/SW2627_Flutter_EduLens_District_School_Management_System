@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../core/widgets/app_screen_bar.dart';
 import '../../../core/widgets/app_shell.dart';
-import '../../../core/widgets/placeholder_destination.dart';
+import '../../../core/widgets/profile_logout_section.dart';
 import '../../../repositories/attendance_repository.dart';
 import '../../../repositories/exam_repository.dart';
 import '../../../repositories/fee_repository.dart';
@@ -15,6 +15,7 @@ import '../../../repositories/firestore_user_repository.dart';
 import '../../../repositories/school_repository.dart';
 import '../../../repositories/student_repository.dart';
 import '../../../repositories/user_repository.dart';
+import '../../../services/auth_service.dart';
 import '../../../services/user_bootstrap_service.dart';
 import '../controllers/school_admin_dashboard_controller.dart';
 import '../controllers/school_info_controller.dart';
@@ -24,9 +25,6 @@ import 'school_info_screen.dart';
 import 'student_fee_management_screen.dart';
 
 /// The School Administrator navigation container.
-///
-/// Supplies the School Admin navigation tabs to [AppShell], owns the
-/// controllers for dashboard, student/fee management, and school info, and handles tab selection.
 class SchoolAdminShell extends StatefulWidget {
   final String? schoolId;
   final String? administratorName;
@@ -40,6 +38,7 @@ class SchoolAdminShell extends StatefulWidget {
   final FeeRepository? feeRepository;
   final ExamRepository? examRepository;
   final UserBootstrapService? bootstrapService;
+  final AuthService? authService;
 
   const SchoolAdminShell({
     super.key,
@@ -55,6 +54,7 @@ class SchoolAdminShell extends StatefulWidget {
     this.feeRepository,
     this.examRepository,
     this.bootstrapService,
+    this.authService,
   });
 
   @override
@@ -67,10 +67,12 @@ class _SchoolAdminShellState extends State<SchoolAdminShell> {
   late final SchoolAdminDashboardController _dashboardController;
   late final StudentFeeManagementController _studentFeeController;
   late final SchoolInfoController _schoolInfoController;
+  late final AuthService _authService;
 
   @override
   void initState() {
     super.initState();
+    _authService = widget.authService ?? AuthService();
     final userRepository = widget.userRepository ?? FirestoreUserRepository();
     final schoolRepository =
         widget.schoolRepository ?? FirestoreSchoolRepository();
@@ -159,9 +161,10 @@ class _SchoolAdminShellState extends State<SchoolAdminShell> {
           schoolId: widget.schoolId,
         );
       default:
-        return const PlaceholderDestination(
-          title: 'Profile',
-          icon: Icons.person_outline,
+        return ProfileLogoutSection(
+          authService: _authService,
+          roleTitle: 'School Administrator',
+          userName: widget.administratorName,
         );
     }
   }
@@ -172,7 +175,20 @@ class _SchoolAdminShellState extends State<SchoolAdminShell> {
       items: _tabs,
       currentIndex: _currentIndex,
       onItemSelected: (index) => setState(() => _currentIndex = index),
-      appBar: AppScreenBar.large(title: _tabs[_currentIndex].label),
+      appBar: AppScreenBar.large(
+        title: _tabs[_currentIndex].label,
+        actions: [
+          IconButton(
+            key: const Key('shell_logout_icon_button'),
+            icon: const Icon(Icons.logout_outlined),
+            tooltip: 'Log Out',
+            onPressed: () => ProfileLogoutSection.performLogout(
+              context: context,
+              authService: _authService,
+            ),
+          ),
+        ],
+      ),
       body: _destination(_currentIndex),
     );
   }

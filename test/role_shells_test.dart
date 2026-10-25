@@ -57,7 +57,6 @@ void main() {
   });
 
   group('Role tab sets', () {
-    // Each role gets the tab set the approved UX defines for it.
     testWidgets('District shows Home / Schools / Exams / Profile', (
       tester,
     ) async {
@@ -102,27 +101,20 @@ void main() {
   });
 
   group('Switching tabs', () {
-    testWidgets('tapping a tab swaps the placeholder behind it', (
+    testWidgets('tapping a tab swaps the body to profile logout section', (
       tester,
     ) async {
       await tester.pumpWidget(wrapShell(const DistrictShell()));
 
-      // Home, Schools and Exams are all real screens now; Profile is the
-      // last District tab still showing a placeholder. What this test is
-      // about is that tapping a tab swaps the body, so it taps the one
-      // with an unambiguous body to assert on.
       expect(find.text('Profile'), findsOneWidget);
 
       await tester.tap(find.text('Profile'));
-      await tester.pump();
+      await tester.pumpAndSettle();
 
-      expect(find.text('This screen has not been built yet.'), findsOneWidget);
+      expect(find.text('Account Options'), findsOneWidget);
     });
 
     testWidgets('every Student tab can be opened', (tester) async {
-      // Home is a real dashboard now rather than a placeholder, so the
-      // shell is given a controller over fakes. Without one it would reach
-      // for Firebase, which is not available in a widget test.
       final students = FakeStudentRepository()
         ..students.add(
           const StudentModel(
@@ -152,17 +144,17 @@ void main() {
       await tester.pumpWidget(
         wrapShell(StudentShell(dashboardController: controller)),
       );
-      await tester.pump();
+      await tester.pumpAndSettle();
 
       expect(find.text('Welcome back, Asha Rao'), findsOneWidget);
 
       await tester.tap(find.text('Exams'));
-      await tester.pump();
+      await tester.pumpAndSettle();
       expect(find.text('Welcome back, Asha Rao'), findsNothing);
 
       await tester.tap(find.text('Profile'));
-      await tester.pump();
-      expect(find.byIcon(Icons.person_outline), findsWidgets);
+      await tester.pumpAndSettle();
+      expect(find.text('Account Options'), findsOneWidget);
     });
   });
 }

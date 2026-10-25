@@ -2,46 +2,32 @@ import 'package:flutter/material.dart';
 
 import '../../../core/widgets/app_screen_bar.dart';
 import '../../../core/widgets/app_shell.dart';
-import '../../../core/widgets/placeholder_destination.dart';
+import '../../../core/widgets/profile_logout_section.dart';
+import '../../../repositories/exam_repository.dart';
 import '../../../repositories/firestore_attendance_repository.dart';
 import '../../../repositories/firestore_exam_repository.dart';
 import '../../../repositories/firestore_fee_repository.dart';
 import '../../../repositories/firestore_school_repository.dart';
 import '../../../repositories/firestore_student_repository.dart';
 import '../../../repositories/firestore_user_repository.dart';
-import '../../../repositories/exam_repository.dart';
 import '../../../repositories/school_repository.dart';
 import '../../../routes/app_routes.dart';
+import '../../../services/auth_service.dart';
 import '../controllers/district_dashboard_controller.dart';
-import '../controllers/exam_overview_controller.dart';
 import '../controllers/district_data_loader.dart';
+import '../controllers/exam_overview_controller.dart';
 import '../controllers/school_list_controller.dart';
 import 'district_dashboard_screen.dart';
 import 'district_exam_overview_screen.dart';
 import 'school_list_screen.dart';
 
 /// The District Administrator navigation container.
-///
-/// It supplies the District tab set to the shared [AppShell], owns the
-/// controllers behind the Home and Schools tabs, and remembers which tab
-/// is open. The shell itself knows nothing about roles; this file is what
-/// makes it a District experience.
-///
-/// This is the composition root for the District feature: the Firestore
-/// repositories are wired up here, so no screen or controller below
-/// reaches for `FirebaseFirestore.instance` itself.
 class DistrictShell extends StatefulWidget {
-  /// Supplied by tests with fake repositories. Left null in the app, where
-  /// the real Firestore-backed loader is built instead.
   final DistrictDataLoader? loader;
-
-  /// Shown in the dashboard greeting.
   final String? administratorName;
-
-  /// Supplied by tests. The Exams tab reads exams and schools directly
-  /// rather than through [loader], which gathers the dashboard's figures.
   final ExamRepository? examRepository;
   final SchoolRepository? schoolRepository;
+  final AuthService? authService;
 
   const DistrictShell({
     super.key,
@@ -49,6 +35,7 @@ class DistrictShell extends StatefulWidget {
     this.administratorName,
     this.examRepository,
     this.schoolRepository,
+    this.authService,
   });
 
   @override
@@ -56,17 +43,18 @@ class DistrictShell extends StatefulWidget {
 }
 
 class _DistrictShellState extends State<DistrictShell> {
-  /// Which tab is open. Starts on the first one.
   int _currentIndex = 0;
 
   late final DistrictDataLoader _loader;
   late final DistrictDashboardController _dashboardController;
   late final SchoolListController _schoolListController;
   late final ExamOverviewController _examOverviewController;
+  late final AuthService _authService;
 
   @override
   void initState() {
     super.initState();
+    _authService = widget.authService ?? AuthService();
     _loader = widget.loader ?? _firestoreLoader();
     _dashboardController = DistrictDashboardController(loader: _loader);
     _schoolListController = SchoolListController(loader: _loader);
@@ -146,9 +134,10 @@ class _DistrictShellState extends State<DistrictShell> {
           onExamSelected: _openExamDetails,
         );
       default:
-        return const PlaceholderDestination(
-          title: 'Profile',
-          icon: Icons.person_outline,
+        return ProfileLogoutSection(
+          authService: _authService,
+          roleTitle: 'District Administrator',
+          userName: widget.administratorName,
         );
     }
   }
@@ -159,7 +148,20 @@ class _DistrictShellState extends State<DistrictShell> {
       items: _tabs,
       currentIndex: _currentIndex,
       onItemSelected: (index) => setState(() => _currentIndex = index),
-      appBar: AppScreenBar.large(title: _tabs[_currentIndex].label),
+      appBar: AppScreenBar.large(
+        title: _tabs[_currentIndex].label,
+        actions: [
+          IconButton(
+            key: const Key('shell_logout_icon_button'),
+            icon: const Icon(Icons.logout_outlined),
+            tooltip: 'Log Out',
+            onPressed: () => ProfileLogoutSection.performLogout(
+              context: context,
+              authService: _authService,
+            ),
+          ),
+        ],
+      ),
       body: _destination(_currentIndex),
     );
   }

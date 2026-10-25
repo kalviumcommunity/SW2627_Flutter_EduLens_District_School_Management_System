@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../core/widgets/app_screen_bar.dart';
 import '../../../core/widgets/app_shell.dart';
 import '../../../core/widgets/placeholder_destination.dart';
+import '../../../core/widgets/profile_logout_section.dart';
 import '../../../repositories/attendance_repository.dart';
 import '../../../repositories/exam_repository.dart';
 import '../../../repositories/firestore_attendance_repository.dart';
@@ -13,6 +14,7 @@ import '../../../repositories/firestore_user_repository.dart';
 import '../../../repositories/school_repository.dart';
 import '../../../repositories/student_repository.dart';
 import '../../../repositories/user_repository.dart';
+import '../../../services/auth_service.dart';
 import '../../../services/user_bootstrap_service.dart';
 import '../../school_admin/controllers/school_exam_schedule_controller.dart';
 import '../../school_admin/screens/school_exam_schedule_screen.dart';
@@ -31,6 +33,7 @@ class TeacherShell extends StatefulWidget {
   final UserBootstrapService? bootstrapService;
   final AttendanceManagementController? attendanceController;
   final SchoolExamScheduleController? examScheduleController;
+  final AuthService? authService;
 
   const TeacherShell({
     super.key,
@@ -44,6 +47,7 @@ class TeacherShell extends StatefulWidget {
     this.bootstrapService,
     this.attendanceController,
     this.examScheduleController,
+    this.authService,
   });
 
   @override
@@ -55,10 +59,12 @@ class _TeacherShellState extends State<TeacherShell> {
 
   late final AttendanceManagementController _attendanceController;
   late final SchoolExamScheduleController _examScheduleController;
+  late final AuthService _authService;
 
   @override
   void initState() {
     super.initState();
+    _authService = widget.authService ?? AuthService();
     final userRepository = widget.userRepository ?? FirestoreUserRepository();
     final bootstrapService =
         widget.bootstrapService ??
@@ -133,9 +139,9 @@ class _TeacherShellState extends State<TeacherShell> {
           schoolId: widget.schoolId,
         );
       default:
-        return const PlaceholderDestination(
-          title: 'Profile',
-          icon: Icons.person_outline,
+        return ProfileLogoutSection(
+          authService: _authService,
+          roleTitle: 'Teacher',
         );
     }
   }
@@ -146,7 +152,20 @@ class _TeacherShellState extends State<TeacherShell> {
       items: _tabs,
       currentIndex: _currentIndex,
       onItemSelected: (index) => setState(() => _currentIndex = index),
-      appBar: AppScreenBar.large(title: _tabs[_currentIndex].label),
+      appBar: AppScreenBar.large(
+        title: _tabs[_currentIndex].label,
+        actions: [
+          IconButton(
+            key: const Key('shell_logout_icon_button'),
+            icon: const Icon(Icons.logout_outlined),
+            tooltip: 'Log Out',
+            onPressed: () => ProfileLogoutSection.performLogout(
+              context: context,
+              authService: _authService,
+            ),
+          ),
+        ],
+      ),
       body: _destination(_currentIndex),
     );
   }
