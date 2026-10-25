@@ -118,15 +118,27 @@ class _SchoolDetailsScreenState extends State<SchoolDetailsScreen> {
         _metricRow('Fees paid', Metrics.formatPercent(d.feePaidPercent)),
         _metricRow('Upcoming exams', '${d.upcomingExams.length}'),
         const SizedBox(height: AppSpacing.md),
-        // Address, contact number and email appear on the School
-        // Information wireframe but are not in the approved model. They
-        // are named here rather than faked, so the gap stays visible.
-        const AppCard(
-          child: Text(
-            'Address, contact number and email are not yet part of the '
-            'approved school model, so they are not shown.',
-            style: AppTextStyles.caption,
-          ),
+        Text('Contact & Location Details', style: AppTextStyles.sectionHeading),
+        const SizedBox(height: AppSpacing.sm),
+        AppListTile(
+          icon: Icons.map_outlined,
+          title: 'Address',
+          subtitle: d.school.address ?? 'Not provided',
+          showChevron: false,
+        ),
+        const SizedBox(height: AppSpacing.sm),
+        AppListTile(
+          icon: Icons.phone_outlined,
+          title: 'Contact Number',
+          subtitle: d.school.contactNumber ?? 'Not provided',
+          showChevron: false,
+        ),
+        const SizedBox(height: AppSpacing.sm),
+        AppListTile(
+          icon: Icons.email_outlined,
+          title: 'Email Address',
+          subtitle: d.school.email ?? 'Not provided',
+          showChevron: false,
         ),
       ],
     );
