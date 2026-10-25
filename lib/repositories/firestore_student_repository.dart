@@ -38,8 +38,21 @@ class FirestoreStudentRepository implements StudentRepository {
   Future<StudentModel?> getStudentById(String studentId) async {
     try {
       final doc = await _collection.doc(studentId).get();
-      if (!doc.exists) return null;
-      return _toModel(doc);
+      if (doc.exists) {
+        return _toModel(doc);
+      }
+
+      // Fallback: Query by studentId field if document ID differs from Auth UID
+      final querySnapshot = await _collection
+          .where(FirestoreFields.studentId, isEqualTo: studentId)
+          .limit(1)
+          .get();
+
+      if (querySnapshot.docs.isNotEmpty) {
+        return _toModel(querySnapshot.docs.first);
+      }
+
+      return null;
     } on FirebaseException catch (e) {
       throw RepositoryException.fromFirebase(e, 'load this student');
     }
