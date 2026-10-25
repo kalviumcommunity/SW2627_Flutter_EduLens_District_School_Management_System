@@ -57,11 +57,49 @@ abstract class AppDate {
     return '${date.day} ${_months[date.month - 1]} ${date.year}';
   }
 
-  /// A stored date and time together, e.g. `16 Oct 2026 · 10:00`.
+  /// Formats a stored 24-hour `HH:mm` time string into a 12-hour AM/PM time.
+  ///
+  /// Examples:
+  /// - `00:00` -> `12:00 AM`
+  /// - `09:05` -> `9:05 AM`
+  /// - `12:00` -> `12:00 PM`
+  /// - `14:00` -> `2:00 PM`
+  /// - `16:45` -> `4:45 PM`
+  /// - `23:59` -> `11:59 PM`
+  ///
+  /// Safe fallbacks handle null, empty, or unparseable input without crashing.
+  static String formatTime(String? value) {
+    if (value == null || value.trim().isEmpty) return 'Time not available';
+    final trimmed = value.trim();
+
+    final upper = trimmed.toUpperCase();
+    if (upper.contains('AM') || upper.contains('PM')) {
+      return trimmed;
+    }
+
+    final parts = trimmed.split(':');
+    if (parts.length != 2) return trimmed;
+
+    final hour = int.tryParse(parts[0]);
+    final minute = int.tryParse(parts[1]);
+
+    if (hour == null || minute == null) return trimmed;
+    if (hour < 0 || hour > 23 || minute < 0 || minute > 59) return trimmed;
+
+    final period = hour >= 12 ? 'PM' : 'AM';
+    final displayHour = hour == 0 ? 12 : (hour > 12 ? hour - 12 : hour);
+    final displayMinute = minute.toString().padLeft(2, '0');
+
+    return '$displayHour:$displayMinute $period';
+  }
+
+  /// A stored date and time together, e.g. `16 Oct 2026 · 10:00 AM`.
   static String formatWithTime(String? date, String? time) {
     final day = formatLong(date);
     if (time == null || time.trim().isEmpty) return day;
-    return '$day · ${time.trim()}';
+    final formattedTime = formatTime(time);
+    if (formattedTime == 'Time not available') return day;
+    return '$day · $formattedTime';
   }
 
   static const List<String> _months = [

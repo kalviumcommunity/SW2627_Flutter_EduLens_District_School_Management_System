@@ -308,10 +308,15 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
   }
 
   Widget _examTile(ExamModel exam) {
-    final times = [
-      if (exam.startTime.trim().isNotEmpty) exam.startTime.trim(),
-      if (exam.endTime.trim().isNotEmpty) exam.endTime.trim(),
-    ].join(' – ');
+    final formattedStart = AppDate.formatTime(exam.startTime);
+    final formattedEnd = AppDate.formatTime(exam.endTime);
+
+    final timeParts = [
+      if (formattedStart != 'Time not available') formattedStart,
+      if (formattedEnd != 'Time not available') formattedEnd,
+    ];
+
+    final times = timeParts.join(' – ');
 
     return Padding(
       padding: const EdgeInsets.only(bottom: AppSpacing.sm),

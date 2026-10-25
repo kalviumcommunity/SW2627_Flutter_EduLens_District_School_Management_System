@@ -48,7 +48,7 @@ void main() {
       expect(AppDate.formatLong('2026-10-16'), '16 Oct 2026');
       expect(
         AppDate.formatWithTime('2026-10-16', '10:00'),
-        '16 Oct 2026 · 10:00',
+        '16 Oct 2026 · 10:00 AM',
       );
       // Not replaced with a placeholder — bad data should stay obvious.
       expect(AppDate.formatLong('garbage'), 'garbage');

@@ -198,7 +198,10 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Science'), findsOneWidget);
-      expect(find.text('14 Oct 2026 · 10:00 · Greenwood High'), findsOneWidget);
+      expect(
+        find.text('14 Oct 2026 · 10:00 AM · Greenwood High'),
+        findsOneWidget,
+      );
 
       // Three of the four exams are upcoming. The past one is identified
       // by its date, not its subject — 'Mathematics' is also the subject
