@@ -36,16 +36,22 @@ void main() {
       expect(AppDate.formatTime('   '), 'Time not available');
     });
 
-    test('handles pre-formatted AM/PM strings without duplicating suffixes', () {
-      expect(AppDate.formatTime('09:00 AM'), '09:00 AM');
-      expect(AppDate.formatTime('02:00 PM'), '02:00 PM');
-    });
+    test(
+      'handles pre-formatted AM/PM strings without duplicating suffixes',
+      () {
+        expect(AppDate.formatTime('09:00 AM'), '09:00 AM');
+        expect(AppDate.formatTime('02:00 PM'), '02:00 PM');
+      },
+    );
 
-    test('handles out-of-range or malformed time values safely without crashing', () {
-      expect(AppDate.formatTime('25:00'), '25:00');
-      expect(AppDate.formatTime('10:75'), '10:75');
-      expect(AppDate.formatTime('invalid'), 'invalid');
-    });
+    test(
+      'handles out-of-range or malformed time values safely without crashing',
+      () {
+        expect(AppDate.formatTime('25:00'), '25:00');
+        expect(AppDate.formatTime('10:75'), '10:75');
+        expect(AppDate.formatTime('invalid'), 'invalid');
+      },
+    );
 
     test('AppDate.formatWithTime formats date and time with 12-hour AM/PM', () {
       expect(

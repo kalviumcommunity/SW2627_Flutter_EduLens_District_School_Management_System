@@ -11,6 +11,7 @@ import '../../../core/widgets/status_badge.dart';
 import '../../../core/widgets/view_state_builder.dart';
 import '../../../models/exam_model.dart';
 import '../../../models/fee_model.dart';
+import '../../../routes/app_routes.dart';
 import '../controllers/student_dashboard_controller.dart';
 
 /// The Student's own dashboard: their attendance, their fee status and
@@ -300,14 +301,15 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
         ViewStateBuilder<List<ExamModel>>(
           state: data.exams,
           emptyTitle: 'No upcoming exams',
-          builder: (context, exams) =>
-              Column(children: exams.map(_examTile).toList()),
+          builder: (context, exams) => Column(
+            children: exams.map((e) => _examTile(context, e)).toList(),
+          ),
         ),
       ],
     );
   }
 
-  Widget _examTile(ExamModel exam) {
+  Widget _examTile(BuildContext context, ExamModel exam) {
     final formattedStart = AppDate.formatTime(exam.startTime);
     final formattedEnd = AppDate.formatTime(exam.endTime);
 
@@ -328,7 +330,11 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
         subtitle: times.isEmpty
             ? AppDate.formatLong(exam.date)
             : '${AppDate.formatLong(exam.date)} · $times',
-        showChevron: false,
+        showChevron: true,
+        onTap: () {
+          Navigator.of(context)
+              .pushNamed(AppRoutes.examDetails, arguments: exam.examId);
+        },
       ),
     );
   }
