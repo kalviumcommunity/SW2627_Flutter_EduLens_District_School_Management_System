@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:my_flutter_edulens/app.dart';
 import 'package:my_flutter_edulens/features/student/screens/student_shell.dart';
+import 'package:my_flutter_edulens/features/teacher/screens/teacher_shell.dart';
 import 'package:my_flutter_edulens/routes/app_routes.dart';
 
 void main() {
@@ -68,7 +69,7 @@ void main() {
       Navigator.pushNamed(context, AppRoutes.teacherDashboard);
       await tester.pumpAndSettle();
 
-      expect(find.text('Teacher Home'), findsOneWidget);
+      expect(find.byType(TeacherShell), findsOneWidget);
     });
 
     testWidgets('Navigates to Student Dashboard route', (

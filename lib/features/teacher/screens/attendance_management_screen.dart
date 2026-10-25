@@ -129,7 +129,7 @@ class _AttendanceManagementScreenState
       child: ListView(
         padding: AppSpacing.paddingScreen,
         children: [
-          _summaryGrid(data),
+          _summaryGrid(data, filteredItems.length),
           const SizedBox(height: AppSpacing.lg),
           _searchAndFilterRow(allClasses),
           const SizedBox(height: AppSpacing.md),
@@ -163,12 +163,17 @@ class _AttendanceManagementScreenState
     );
   }
 
-  Widget _summaryGrid(AttendanceManagementData data) {
+  Widget _summaryGrid(AttendanceManagementData data, int filteredCount) {
+    final isFiltered = _selectedClassFilter != 'All' || _searchQuery.isNotEmpty;
+    final displayStudentCount = isFiltered
+        ? '$filteredCount of ${data.totalStudents}'
+        : '${data.totalStudents}';
+
     final cards = [
       StatCard(
         icon: Icons.groups_outlined,
-        label: 'Total Students',
-        value: '${data.totalStudents}',
+        label: isFiltered ? 'Filtered Students' : 'Total Students',
+        value: displayStudentCount,
         iconColor: AppColors.info,
         iconBackground: AppColors.infoSoft,
       ),
