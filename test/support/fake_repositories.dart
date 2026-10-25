@@ -1,12 +1,14 @@
 import 'package:my_flutter_edulens/models/attendance_model.dart';
 import 'package:my_flutter_edulens/models/exam_model.dart';
 import 'package:my_flutter_edulens/models/fee_model.dart';
+import 'package:my_flutter_edulens/models/leave_request_model.dart';
 import 'package:my_flutter_edulens/models/school_model.dart';
 import 'package:my_flutter_edulens/models/student_model.dart';
 import 'package:my_flutter_edulens/models/user_model.dart';
 import 'package:my_flutter_edulens/repositories/attendance_repository.dart';
 import 'package:my_flutter_edulens/repositories/exam_repository.dart';
 import 'package:my_flutter_edulens/repositories/fee_repository.dart';
+import 'package:my_flutter_edulens/repositories/leave_request_repository.dart';
 import 'package:my_flutter_edulens/repositories/repository_exception.dart';
 import 'package:my_flutter_edulens/repositories/school_repository.dart';
 import 'package:my_flutter_edulens/repositories/student_repository.dart';
@@ -325,4 +327,71 @@ ExamModel exam(
   startTime: '10:00',
   endTime: '12:00',
   createdBy: 't1',
+);
+
+class FakeLeaveRequestRepository
+    with FailableRepository
+    implements LeaveRequestRepository {
+  final List<LeaveRequestModel> requests = [];
+
+  @override
+  Future<List<LeaveRequestModel>> getLeaveRequestsByStudent(
+    String studentId,
+  ) async {
+    _maybeFail('load student leave requests');
+    return requests.where((r) => r.studentId == studentId).toList();
+  }
+
+  @override
+  Future<List<LeaveRequestModel>> getLeaveRequestsBySchool(
+    String schoolId,
+  ) async {
+    _maybeFail('load school leave requests');
+    return requests.where((r) => r.schoolId == schoolId).toList();
+  }
+
+  @override
+  Future<void> saveLeaveRequest(LeaveRequestModel request) async {
+    _maybeFail('save leave request');
+    requests.removeWhere((r) => r.requestId == request.requestId);
+    requests.add(request);
+  }
+
+  @override
+  Future<void> updateLeaveRequestStatus({
+    required String requestId,
+    required String status,
+    required String teacherId,
+    String? comment,
+  }) async {
+    _maybeFail('update leave request status');
+    final index = requests.indexWhere((r) => r.requestId == requestId);
+    if (index != -1) {
+      final old = requests[index];
+      requests[index] = old.copyWith(
+        status: status,
+        reviewedBy: teacherId,
+        reviewedAt: '2026-10-21 10:00',
+        reviewComment: comment,
+      );
+    }
+  }
+}
+
+LeaveRequestModel leaveRequest(
+  String id, {
+  required String studentId,
+  required String schoolId,
+  String status = 'Pending',
+}) => LeaveRequestModel(
+  requestId: id,
+  studentId: studentId,
+  studentName: 'Asha Rao',
+  schoolId: schoolId,
+  className: 'Class 10',
+  startDate: '2026-10-25',
+  endDate: '2026-10-26',
+  reason: 'Family event',
+  status: status,
+  submittedAt: '2026-10-20 09:00',
 );

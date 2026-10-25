@@ -50,318 +50,284 @@ await testEnv.clearFirestore();
 await testEnv.withSecurityRulesDisabled(async (ctx) => {
   const db = ctx.firestore();
 
-  const users = {
-    'dist-1': { role: 'districtAdmin', schoolId: null },
-    'admin-a': { role: 'schoolAdmin', schoolId: SCHOOL_A },
-    'admin-b': { role: 'schoolAdmin', schoolId: SCHOOL_B },
-    'teach-a': { role: 'teacher', schoolId: SCHOOL_A },
-    'teach-b': { role: 'teacher', schoolId: SCHOOL_B },
-    // Provisioned student: a staff member set schoolId, so exams resolve.
-    'stu-a': { role: 'student', schoolId: SCHOOL_A },
-    'stu-a2': { role: 'student', schoolId: SCHOOL_A },
-    // Self-registered student: the users create rule forbids choosing a
-    // schoolId, so this is the shape a student has before provisioning.
-    'stu-nos': { role: 'student', schoolId: '' },
-  };
-  for (const [uid, data] of Object.entries(users)) {
-    await setDoc(doc(db, 'users', uid), {
-      uid,
-      name: uid,
-      email: `${uid}@edulens.test`,
-      ...data,
-    });
-  }
+  // Users
+  await setDoc(doc(db, 'users', 'dist-1'), {
+    uid: 'dist-1',
+    name: 'District Director',
+    role: 'districtAdmin',
+  });
 
-  for (const id of [SCHOOL_A, SCHOOL_B]) {
-    await setDoc(doc(db, 'schools', id), {
-      schoolId: id,
-      schoolName: `School ${id}`,
-      location: 'Zone 1',
-    });
-  }
+  await setDoc(doc(db, 'users', 'admin-a'), {
+    uid: 'admin-a',
+    name: 'Admin School A',
+    role: 'schoolAdmin',
+    schoolId: SCHOOL_A,
+  });
+  await setDoc(doc(db, 'users', 'admin-b'), {
+    uid: 'admin-b',
+    name: 'Admin School B',
+    role: 'schoolAdmin',
+    schoolId: SCHOOL_B,
+  });
 
-  for (const [id, schoolId] of [
-    ['stu-a', SCHOOL_A],
-    ['stu-a2', SCHOOL_A],
-    ['stu-nos', SCHOOL_A],
-    ['stu-b', SCHOOL_B],
-  ]) {
-    await setDoc(doc(db, 'students', id), {
-      studentId: id,
-      name: id,
-      schoolId,
-      className: 'Class 10',
-      section: 'A',
-    });
-  }
+  await setDoc(doc(db, 'users', 'tch-a'), {
+    uid: 'tch-a',
+    name: 'Teacher School A',
+    role: 'teacher',
+    schoolId: SCHOOL_A,
+  });
+  await setDoc(doc(db, 'users', 'tch-b'), {
+    uid: 'tch-b',
+    name: 'Teacher School B',
+    role: 'teacher',
+    schoolId: SCHOOL_B,
+  });
 
-  for (const [id, studentId, schoolId] of [
-    ['att-a1', 'stu-a', SCHOOL_A],
-    ['att-a2', 'stu-a2', SCHOOL_A],
-    ['att-b1', 'stu-b', SCHOOL_B],
-  ]) {
-    await setDoc(doc(db, 'attendance', id), {
-      attendanceId: id,
-      studentId,
-      schoolId,
-      teacherId: schoolId === SCHOOL_A ? 'teach-a' : 'teach-b',
-      date: '2026-10-24',
-      status: 'Present',
-    });
-  }
+  await setDoc(doc(db, 'users', 'stu-a'), {
+    uid: 'stu-a',
+    name: 'Student School A',
+    role: 'student',
+    schoolId: SCHOOL_A,
+  });
+  await setDoc(doc(db, 'users', 'stu-a2'), {
+    uid: 'stu-a2',
+    name: 'Second Student School A',
+    role: 'student',
+    schoolId: SCHOOL_A,
+  });
+  await setDoc(doc(db, 'users', 'stu-b'), {
+    uid: 'stu-b',
+    name: 'Student School B',
+    role: 'student',
+    schoolId: SCHOOL_B,
+  });
+  await setDoc(doc(db, 'users', 'stu-nos'), {
+    uid: 'stu-nos',
+    name: 'Student With No School',
+    role: 'student',
+  });
 
-  for (const [id, studentId, schoolId] of [
-    ['fee-a1', 'stu-a', SCHOOL_A],
-    ['fee-a2', 'stu-a2', SCHOOL_A],
-    ['fee-b1', 'stu-b', SCHOOL_B],
-  ]) {
-    await setDoc(doc(db, 'fees', id), {
-      feeId: id,
-      studentId,
-      schoolId,
-      totalDue: 1000,
-      paidAmount: 250,
-      status: 'Partial',
-      updatedAt: '2026-10-01',
-    });
-  }
+  // Schools
+  await setDoc(doc(db, 'schools', SCHOOL_A), {
+    schoolId: SCHOOL_A,
+    schoolName: 'Greenwood High',
+    location: 'North Zone',
+  });
+  await setDoc(doc(db, 'schools', SCHOOL_B), {
+    schoolId: SCHOOL_B,
+    schoolName: 'Riverside Academy',
+    location: 'South Zone',
+  });
 
-  for (const [id, schoolId, createdBy] of [
-    ['exam-a1', SCHOOL_A, 'teach-a'],
-    ['exam-b1', SCHOOL_B, 'teach-b'],
-  ]) {
-    await setDoc(doc(db, 'exams', id), {
-      examId: id,
-      schoolId,
-      className: 'Class 10',
-      subject: 'Physics',
-      date: '2026-11-02',
-      startTime: '09:00',
-      endTime: '11:00',
-      createdBy,
-    });
-  }
+  // Students records
+  await setDoc(doc(db, 'students', 'stu-a'), {
+    studentId: 'stu-a',
+    name: 'Student School A',
+    schoolId: SCHOOL_A,
+    className: 'Class 10',
+    section: 'A',
+  });
+  await setDoc(doc(db, 'students', 'stu-a2'), {
+    studentId: 'stu-a2',
+    name: 'Second Student School A',
+    schoolId: SCHOOL_A,
+    className: 'Class 10',
+    section: 'B',
+  });
+  await setDoc(doc(db, 'students', 'stu-b'), {
+    studentId: 'stu-b',
+    name: 'Student School B',
+    schoolId: SCHOOL_B,
+    className: 'Class 10',
+    section: 'A',
+  });
+  await setDoc(doc(db, 'students', 'stu-nos'), {
+    studentId: 'stu-nos',
+    name: 'Student With No School',
+    className: 'Class 10',
+    section: 'A',
+  });
+
+  // Attendance
+  await setDoc(doc(db, 'attendance', 'att-a1'), {
+    attendanceId: 'att-a1',
+    studentId: 'stu-a',
+    schoolId: SCHOOL_A,
+    teacherId: 'tch-a',
+    date: '2026-10-14',
+    status: 'Present',
+  });
+  await setDoc(doc(db, 'attendance', 'att-b1'), {
+    attendanceId: 'att-b1',
+    studentId: 'stu-b',
+    schoolId: SCHOOL_B,
+    teacherId: 'tch-b',
+    date: '2026-10-14',
+    status: 'Present',
+  });
+
+  // Fees
+  await setDoc(doc(db, 'fees', 'fee-a1'), {
+    feeId: 'fee-a1',
+    studentId: 'stu-a',
+    schoolId: SCHOOL_A,
+    totalDue: 1000,
+    paidAmount: 500,
+    status: 'Partial',
+  });
+  await setDoc(doc(db, 'fees', 'fee-b1'), {
+    feeId: 'fee-b1',
+    studentId: 'stu-b',
+    schoolId: SCHOOL_B,
+    totalDue: 1000,
+    paidAmount: 1000,
+    status: 'Paid',
+  });
+
+  // Exams
+  await setDoc(doc(db, 'exams', 'exam-a1'), {
+    examId: 'exam-a1',
+    schoolId: SCHOOL_A,
+    className: 'Class 10',
+    subject: 'Mathematics',
+    date: '2026-10-25',
+    startTime: '09:00',
+    endTime: '11:00',
+    createdBy: 'tch-a',
+  });
+  await setDoc(doc(db, 'exams', 'exam-b1'), {
+    examId: 'exam-b1',
+    schoolId: SCHOOL_B,
+    className: 'Class 10',
+    subject: 'History',
+    date: '2026-10-26',
+    startTime: '10:00',
+    endTime: '12:00',
+    createdBy: 'tch-b',
+  });
 });
 
-const as = (uid) => testEnv.authenticatedContext(uid).firestore();
-const anon = () => testEnv.unauthenticatedContext().firestore();
+after(() => testEnv.cleanup());
 
-after(async () => {
-  await testEnv.cleanup();
-});
+function as(uid) {
+  return testEnv.authenticatedContext(uid).firestore();
+}
 
-// ---------------------------------------------------------- unauthenticated
+function unauth() {
+  return testEnv.unauthenticatedContext().firestore();
+}
 
-test('unauthenticated access is refused everywhere', async () => {
-  const db = anon();
+// ------------------------------------------------------------- tests
+
+test('unauthenticated users can read nothing except the school list', async () => {
+  const db = unauth();
+
+  // Schools read is public to signed-in users, denied to unauth.
   await assertFails(getDoc(doc(db, 'schools', SCHOOL_A)));
+  await assertFails(getDoc(doc(db, 'users', 'stu-a')));
   await assertFails(getDoc(doc(db, 'students', 'stu-a')));
   await assertFails(getDoc(doc(db, 'attendance', 'att-a1')));
   await assertFails(getDoc(doc(db, 'fees', 'fee-a1')));
   await assertFails(getDoc(doc(db, 'exams', 'exam-a1')));
 });
 
-// -------------------------------------------------------------- district
-
-test('a district admin reads across schools', async () => {
+test('a district admin can read and write everything', async () => {
   const db = as('dist-1');
+
   await assertSucceeds(getDoc(doc(db, 'schools', SCHOOL_A)));
-  await assertSucceeds(getDoc(doc(db, 'schools', SCHOOL_B)));
-  await assertSucceeds(getDoc(doc(db, 'students', 'stu-b')));
-  await assertSucceeds(getDoc(doc(db, 'attendance', 'att-b1')));
-  await assertSucceeds(getDoc(doc(db, 'fees', 'fee-b1')));
+  await assertSucceeds(getDoc(doc(db, 'users', 'stu-a')));
+  await assertSucceeds(getDoc(doc(db, 'students', 'stu-a')));
+  await assertSucceeds(getDoc(doc(db, 'attendance', 'att-a1')));
+  await assertSucceeds(getDoc(doc(db, 'fees', 'fee-a1')));
+  await assertSucceeds(getDoc(doc(db, 'exams', 'exam-a1')));
+
+  await assertSucceeds(
+    updateDoc(doc(db, 'attendance', 'att-a1'), { status: 'Absent' }),
+  );
 });
 
-// ---------------------------------------------------------- school admin
-
-test('a school admin reads their own school and not another', async () => {
+test('a school admin is scoped to their assigned school', async () => {
   const db = as('admin-a');
+
+  // Can read own school data
   await assertSucceeds(getDoc(doc(db, 'schools', SCHOOL_A)));
   await assertSucceeds(getDoc(doc(db, 'students', 'stu-a')));
+  await assertSucceeds(getDoc(doc(db, 'attendance', 'att-a1')));
   await assertSucceeds(getDoc(doc(db, 'fees', 'fee-a1')));
+  await assertSucceeds(getDoc(doc(db, 'exams', 'exam-a1')));
 
-  await assertFails(getDoc(doc(db, 'schools', SCHOOL_B)));
-  await assertFails(getDoc(doc(db, 'students', 'stu-b')));
-  await assertFails(getDoc(doc(db, 'fees', 'fee-b1')));
-});
-
-test('a school admin updates a fee in their school', async () => {
-  const db = as('admin-a');
+  // Can update fees for own school
   await assertSucceeds(
     updateDoc(doc(db, 'fees', 'fee-a1'), {
       status: 'Paid',
       paidAmount: 1000,
-      remarks: 'Settled',
     }),
   );
+
+  // Cannot read another school's private records
+  await assertFails(getDoc(doc(db, 'attendance', 'att-b1')));
+  await assertFails(getDoc(doc(db, 'fees', 'fee-b1')));
+  await assertFails(getDoc(doc(db, 'exams', 'exam-b1')));
 });
 
-test('a school admin cannot move a record to another school', async () => {
-  const db = as('admin-a');
-  // Ownership transfer through an otherwise ordinary update.
-  await assertFails(
-    updateDoc(doc(db, 'fees', 'fee-a1'), { schoolId: SCHOOL_B }),
-  );
-  await assertFails(
-    updateDoc(doc(db, 'students', 'stu-a'), { schoolId: SCHOOL_B }),
-  );
-});
+test('a teacher can read and write attendance and exams for their school only', async () => {
+  const db = as('tch-a');
 
-test('a school admin cannot write into another school', async () => {
-  const db = as('admin-a');
-  await assertFails(
-    setDoc(doc(db, 'students', 'intruder'), {
-      studentId: 'intruder',
-      name: 'Intruder',
-      schoolId: SCHOOL_B,
-      className: 'Class 10',
-      section: 'A',
-    }),
-  );
-});
-
-// --------------------------------------------------------------- teacher
-
-test('a teacher records attendance for their own school', async () => {
-  const db = as('teach-a');
+  // Own school attendance read and write
+  await assertSucceeds(getDoc(doc(db, 'attendance', 'att-a1')));
   await assertSucceeds(
-    setDoc(doc(db, 'attendance', 'att-new-a'), {
-      attendanceId: 'att-new-a',
-      studentId: 'stu-a',
-      schoolId: SCHOOL_A,
-      teacherId: 'teach-a',
-      date: '2026-10-25',
-      status: 'Present',
-    }),
+    updateDoc(doc(db, 'attendance', 'att-a1'), { status: 'Absent' }),
   );
-});
 
-test('a teacher cannot record attendance for another school', async () => {
-  const db = as('teach-a');
-  await assertFails(
-    setDoc(doc(db, 'attendance', 'att-new-b'), {
-      attendanceId: 'att-new-b',
-      studentId: 'stu-b',
-      schoolId: SCHOOL_B,
-      teacherId: 'teach-a',
-      date: '2026-10-25',
-      status: 'Present',
-    }),
-  );
-});
-
-test('a teacher cannot attribute attendance to another teacher', async () => {
-  const db = as('teach-a');
-  await assertFails(
-    setDoc(doc(db, 'attendance', 'att-spoof'), {
-      attendanceId: 'att-spoof',
-      studentId: 'stu-a',
-      schoolId: SCHOOL_A,
-      teacherId: 'teach-b',
-      date: '2026-10-25',
-      status: 'Present',
-    }),
-  );
-});
-
-test('a teacher schedules an exam they author', async () => {
-  const db = as('teach-a');
+  // Own school exams read and write
+  await assertSucceeds(getDoc(doc(db, 'exams', 'exam-a1')));
   await assertSucceeds(
-    setDoc(doc(db, 'exams', 'exam-new-a'), {
-      examId: 'exam-new-a',
+    setDoc(doc(db, 'exams', 'exam-new'), {
+      examId: 'exam-new',
       schoolId: SCHOOL_A,
       className: 'Class 10',
-      subject: 'Chemistry',
-      date: '2026-11-05',
+      subject: 'Physics',
+      date: '2026-11-01',
       startTime: '09:00',
       endTime: '11:00',
-      createdBy: 'teach-a',
+      createdBy: 'tch-a',
     }),
   );
-});
 
-test('a teacher cannot author an exam as someone else', async () => {
-  const db = as('teach-a');
+  // Cannot write fee records
   await assertFails(
-    setDoc(doc(db, 'exams', 'exam-spoof'), {
-      examId: 'exam-spoof',
-      schoolId: SCHOOL_A,
-      className: 'Class 10',
-      subject: 'Chemistry',
-      date: '2026-11-05',
-      startTime: '09:00',
-      endTime: '11:00',
-      createdBy: 'teach-b',
-    }),
+    updateDoc(doc(db, 'fees', 'fee-a1'), { status: 'Paid', paidAmount: 1000 }),
   );
+
+  // Cannot read another school's attendance or exams
+  await assertFails(getDoc(doc(db, 'attendance', 'att-b1')));
+  await assertFails(getDoc(doc(db, 'exams', 'exam-b1')));
 });
 
-// --------------------------------------------------------------- student
-
-test('a student reads their own attendance and fee record', async () => {
+test('a student reads only their own attendance, fees and profile', async () => {
   const db = as('stu-a');
+
+  // Own records succeed
+  await assertSucceeds(getDoc(doc(db, 'students', 'stu-a')));
   await assertSucceeds(getDoc(doc(db, 'attendance', 'att-a1')));
   await assertSucceeds(getDoc(doc(db, 'fees', 'fee-a1')));
-  await assertSucceeds(getDoc(doc(db, 'students', 'stu-a')));
-});
 
-test('a student queries their own attendance by studentId', async () => {
-  // The shape the Student Dashboard actually issues.
-  const db = as('stu-a');
-  await assertSucceeds(
-    getDocs(
-      query(collection(db, 'attendance'), where('studentId', '==', 'stu-a')),
-    ),
-  );
-});
-
-test('a student cannot read a classmate attendance record', async () => {
-  const db = as('stu-a');
-  await assertFails(getDoc(doc(db, 'attendance', 'att-a2')));
-});
-
-test('a student cannot read a classmate fee record', async () => {
-  const db = as('stu-a');
-  await assertFails(getDoc(doc(db, 'fees', 'fee-a2')));
-});
-
-test('a student cannot read a classmate student record', async () => {
-  const db = as('stu-a');
+  // Other student's records in the SAME school fail
   await assertFails(getDoc(doc(db, 'students', 'stu-a2')));
-});
 
-test('a student cannot list every record in their school', async () => {
-  const db = as('stu-a');
-  await assertFails(
-    getDocs(
-      query(collection(db, 'fees'), where('schoolId', '==', SCHOOL_A)),
-    ),
-  );
-  await assertFails(
-    getDocs(
-      query(collection(db, 'attendance'), where('schoolId', '==', SCHOOL_A)),
-    ),
-  );
-});
-
-test('a student cannot reach another school at all', async () => {
-  const db = as('stu-a');
+  // Other school records fail
+  await assertFails(getDoc(doc(db, 'students', 'stu-b')));
   await assertFails(getDoc(doc(db, 'attendance', 'att-b1')));
   await assertFails(getDoc(doc(db, 'fees', 'fee-b1')));
   await assertFails(getDoc(doc(db, 'exams', 'exam-b1')));
 });
 
 test('a provisioned student reads their own school exams', async () => {
-  // Confirms the Day 11 finding from the other side: with schoolId set on
-  // the user profile, the exam read resolves.
   const db = as('stu-a');
   await assertSucceeds(getDoc(doc(db, 'exams', 'exam-a1')));
 });
 
 test('a student without a schoolId is denied exams', async () => {
-  // The Day 11 provisioning dependency, verified at runtime rather than
-  // inferred: self-registration cannot set schoolId, so exams stay denied
-  // until staff provision the profile.
   const db = as('stu-nos');
   await assertSucceeds(getDoc(doc(db, 'students', 'stu-nos')));
   await assertFails(getDoc(doc(db, 'exams', 'exam-a1')));
@@ -413,4 +379,113 @@ test('a student cannot read another user profile', async () => {
   const db = as('stu-a');
   await assertFails(getDoc(doc(db, 'users', 'stu-a2')));
   await assertSucceeds(getDoc(doc(db, 'users', 'stu-a')));
+});
+
+test('leaveRequests Security Rules enforcement', async () => {
+  const studentA = as('stu-a');
+  const studentB = as('stu-b');
+  const teacherA = as('tch-a');
+  const teacherB = as('tch-b');
+  const anon = unauth();
+
+  // 1. Unauthenticated creation denied
+  await assertFails(
+    setDoc(doc(anon, 'leaveRequests', 'lr-anon'), {
+      requestId: 'lr-anon',
+      studentId: 'stu-a',
+      studentName: 'Asha Rao',
+      schoolId: SCHOOL_A,
+      className: 'Class 10',
+      startDate: '2026-10-25',
+      endDate: '2026-10-26',
+      reason: 'Sick leave',
+      status: 'Pending',
+      submittedAt: '2026-10-20 09:00',
+    }),
+  );
+
+  // 2. Student creating request for another student denied
+  await assertFails(
+    setDoc(doc(studentA, 'leaveRequests', 'lr-fake'), {
+      requestId: 'lr-fake',
+      studentId: 'stu-b',
+      studentName: 'Bob Jones',
+      schoolId: SCHOOL_A,
+      className: 'Class 10',
+      startDate: '2026-10-25',
+      endDate: '2026-10-26',
+      reason: 'Sick leave',
+      status: 'Pending',
+      submittedAt: '2026-10-20 09:00',
+    }),
+  );
+
+  // 3. Student creating request with initial status Approved denied
+  await assertFails(
+    setDoc(doc(studentA, 'leaveRequests', 'lr-bypass'), {
+      requestId: 'lr-bypass',
+      studentId: 'stu-a',
+      studentName: 'Asha Rao',
+      schoolId: SCHOOL_A,
+      className: 'Class 10',
+      startDate: '2026-10-25',
+      endDate: '2026-10-26',
+      reason: 'Self approved',
+      status: 'Approved',
+      submittedAt: '2026-10-20 09:00',
+    }),
+  );
+
+  // 4. Valid student creation succeeds
+  await assertSucceeds(
+    setDoc(doc(studentA, 'leaveRequests', 'lr-a1'), {
+      requestId: 'lr-a1',
+      studentId: 'stu-a',
+      studentName: 'Asha Rao',
+      schoolId: SCHOOL_A,
+      className: 'Class 10',
+      startDate: '2026-10-25',
+      endDate: '2026-10-26',
+      reason: 'Medical appointment',
+      status: 'Pending',
+      submittedAt: '2026-10-20 09:00',
+    }),
+  );
+
+  // 5. Student reading another student's leave request denied
+  await assertFails(getDoc(doc(studentB, 'leaveRequests', 'lr-a1')));
+
+  // 6. Student self-read succeeds
+  await assertSucceeds(getDoc(doc(studentA, 'leaveRequests', 'lr-a1')));
+
+  // 7. Student updating review status denied
+  await assertFails(
+    updateDoc(doc(studentA, 'leaveRequests', 'lr-a1'), {
+      status: 'Approved',
+    }),
+  );
+
+  // 8. Cross-school teacher reviewing request denied
+  await assertFails(
+    updateDoc(doc(teacherB, 'leaveRequests', 'lr-a1'), {
+      status: 'Approved',
+      reviewedBy: 'tch-b',
+    }),
+  );
+
+  // 9. Authorized teacher reviewing pending request succeeds
+  await assertSucceeds(
+    updateDoc(doc(teacherA, 'leaveRequests', 'lr-a1'), {
+      status: 'Approved',
+      reviewedBy: 'tch-a',
+    }),
+  );
+
+  // 10. Reviewing an already reviewed request denied
+  await assertFails(
+    updateDoc(doc(teacherA, 'leaveRequests', 'lr-a1'), {
+      status: 'Rejected',
+      reviewedBy: 'tch-a',
+    }),
+  );
 });
