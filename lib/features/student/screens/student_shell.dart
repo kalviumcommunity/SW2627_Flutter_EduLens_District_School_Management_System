@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../core/widgets/app_list_tile.dart';
 import '../../../core/widgets/app_screen_bar.dart';
 import '../../../core/widgets/app_shell.dart';
 import '../../../core/widgets/profile_logout_section.dart';
@@ -128,9 +129,41 @@ class _StudentShellState extends State<StudentShell> {
           schoolId: widget.schoolId,
         );
       default:
+        final student = _dashboardController.state.data?.student;
+        final schoolName = _examScheduleController.school?.schoolName;
+
         return ProfileLogoutSection(
           authService: _authService,
           roleTitle: 'Student',
+          userName: student?.name,
+          details: [
+            AppListTile(
+              icon: Icons.school_outlined,
+              title: 'School',
+              subtitle: schoolName ?? 'Not provided',
+              showChevron: false,
+            ),
+            const SizedBox(height: 8),
+            AppListTile(
+              icon: Icons.class_outlined,
+              title: 'Class & Section',
+              subtitle: student != null
+                  ? '${student.className} - Section ${student.section}'
+                  : 'Not provided',
+              showChevron: false,
+            ),
+            const SizedBox(height: 8),
+            AppListTile(
+              icon: Icons.pin_outlined,
+              title: 'Roll Number',
+              subtitle:
+                  (student?.rollNumber != null &&
+                      student!.rollNumber!.isNotEmpty)
+                  ? student.rollNumber!
+                  : 'Not provided',
+              showChevron: false,
+            ),
+          ],
         );
     }
   }

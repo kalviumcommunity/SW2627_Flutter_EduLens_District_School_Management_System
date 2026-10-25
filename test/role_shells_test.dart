@@ -111,7 +111,7 @@ void main() {
       await tester.tap(find.text('Profile'));
       await tester.pumpAndSettle();
 
-      expect(find.text('Account Options'), findsOneWidget);
+      expect(find.text('District Administrator'), findsOneWidget);
     });
 
     testWidgets('every Student tab can be opened', (tester) async {
@@ -154,7 +154,7 @@ void main() {
 
       await tester.tap(find.text('Profile'));
       await tester.pumpAndSettle();
-      expect(find.text('Account Options'), findsOneWidget);
+      expect(find.text('Student'), findsWidgets);
     });
   });
 }

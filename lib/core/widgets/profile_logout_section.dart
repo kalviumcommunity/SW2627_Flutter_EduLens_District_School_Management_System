@@ -11,13 +11,14 @@ import 'app_list_tile.dart';
 
 /// Shared Profile and Logout widget embedded across all four role shells.
 ///
-/// Handles session display, confirmation modal dialogs, duplicate sign-out
-/// prevention, error handling, and clearing the navigation stack on logout.
+/// Displays user session details, role-specific account tiles, confirmation
+/// dialogs, duplicate sign-out prevention, and clears navigation on logout.
 class ProfileLogoutSection extends StatefulWidget {
   final AuthService? authService;
   final String? roleTitle;
   final String? userName;
   final String? userEmail;
+  final List<Widget>? details;
 
   const ProfileLogoutSection({
     super.key,
@@ -25,6 +26,7 @@ class ProfileLogoutSection extends StatefulWidget {
     this.roleTitle,
     this.userName,
     this.userEmail,
+    this.details,
   });
 
   /// Displays the confirmation dialog and executes sign-out.
@@ -188,6 +190,19 @@ class _ProfileLogoutSectionState extends State<ProfileLogoutSection> {
             ],
           ),
         ),
+        if (widget.details != null && widget.details!.isNotEmpty) ...[
+          const SizedBox(height: AppSpacing.lg),
+          AppCard(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Role Details', style: AppTextStyles.sectionHeading),
+                const SizedBox(height: AppSpacing.sm),
+                ...widget.details!,
+              ],
+            ),
+          ),
+        ],
         const SizedBox(height: AppSpacing.lg),
         AppCard(
           child: Column(

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../core/widgets/app_list_tile.dart';
 import '../../../core/widgets/app_screen_bar.dart';
 import '../../../core/widgets/app_shell.dart';
 import '../../../core/widgets/profile_logout_section.dart';
@@ -138,6 +139,21 @@ class _DistrictShellState extends State<DistrictShell> {
           authService: _authService,
           roleTitle: 'District Administrator',
           userName: widget.administratorName,
+          details: const [
+            AppListTile(
+              icon: Icons.admin_panel_settings_outlined,
+              title: 'Role Scope',
+              subtitle: 'District Wide (All Schools)',
+              showChevron: false,
+            ),
+            SizedBox(height: 8),
+            AppListTile(
+              icon: Icons.security_outlined,
+              title: 'Access Level',
+              subtitle: 'Full Administrative Privilege',
+              showChevron: false,
+            ),
+          ],
         );
     }
   }

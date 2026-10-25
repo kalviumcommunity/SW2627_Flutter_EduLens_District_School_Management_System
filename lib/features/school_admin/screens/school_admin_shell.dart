@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../core/widgets/app_list_tile.dart';
 import '../../../core/widgets/app_screen_bar.dart';
 import '../../../core/widgets/app_shell.dart';
 import '../../../core/widgets/profile_logout_section.dart';
@@ -161,10 +162,30 @@ class _SchoolAdminShellState extends State<SchoolAdminShell> {
           schoolId: widget.schoolId,
         );
       default:
+        final school = _dashboardController.state.data?.school;
+        final targetSchoolId = widget.schoolId ?? school?.schoolId;
+
         return ProfileLogoutSection(
           authService: _authService,
           roleTitle: 'School Administrator',
-          userName: widget.administratorName,
+          userName:
+              widget.administratorName ??
+              _dashboardController.state.data?.administratorProfile.name,
+          details: [
+            AppListTile(
+              icon: Icons.school_outlined,
+              title: 'Assigned School',
+              subtitle: school?.schoolName ?? 'Not provided',
+              showChevron: false,
+            ),
+            const SizedBox(height: 8),
+            AppListTile(
+              icon: Icons.tag,
+              title: 'School Identifier',
+              subtitle: targetSchoolId ?? 'Not provided',
+              showChevron: false,
+            ),
+          ],
         );
     }
   }
