@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../core/widgets/app_list_tile.dart';
 import '../../../core/widgets/app_screen_bar.dart';
 import '../../../core/widgets/app_shell.dart';
 import '../../../core/widgets/placeholder_destination.dart';
@@ -139,9 +140,28 @@ class _TeacherShellState extends State<TeacherShell> {
           schoolId: widget.schoolId,
         );
       default:
+        final schoolName = _examScheduleController.school?.schoolName;
+        final targetSchoolId =
+            widget.schoolId ?? _examScheduleController.targetSchoolId;
+
         return ProfileLogoutSection(
           authService: _authService,
           roleTitle: 'Teacher',
+          details: [
+            AppListTile(
+              icon: Icons.school_outlined,
+              title: 'Assigned School',
+              subtitle: schoolName ?? 'Not provided',
+              showChevron: false,
+            ),
+            const SizedBox(height: 8),
+            AppListTile(
+              icon: Icons.tag,
+              title: 'School Identifier',
+              subtitle: targetSchoolId ?? 'Not provided',
+              showChevron: false,
+            ),
+          ],
         );
     }
   }

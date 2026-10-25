@@ -72,6 +72,8 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('District Administrator'), findsOneWidget);
+      await tester.drag(find.byType(ListView).first, const Offset(0, -300));
+      await tester.pumpAndSettle();
       expect(find.byKey(const Key('profile_logout_button')), findsOneWidget);
     });
 
@@ -97,6 +99,8 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('School Administrator'), findsOneWidget);
+      await tester.drag(find.byType(ListView).first, const Offset(0, -300));
+      await tester.pumpAndSettle();
       expect(find.byKey(const Key('profile_logout_button')), findsOneWidget);
     });
 
@@ -119,6 +123,8 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Teacher'), findsOneWidget);
+      await tester.drag(find.byType(ListView).first, const Offset(0, -300));
+      await tester.pumpAndSettle();
       expect(find.byKey(const Key('profile_logout_button')), findsOneWidget);
     });
 
@@ -141,6 +147,8 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Student'), findsOneWidget);
+      await tester.drag(find.byType(ListView).first, const Offset(0, -300));
+      await tester.pumpAndSettle();
       expect(find.byKey(const Key('profile_logout_button')), findsOneWidget);
     });
   });
