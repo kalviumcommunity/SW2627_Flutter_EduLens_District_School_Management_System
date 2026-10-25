@@ -127,6 +127,7 @@ class _StudentShellState extends State<StudentShell> {
         return SchoolExamScheduleScreen(
           controller: _examScheduleController,
           schoolId: widget.schoolId,
+          allowScheduling: false,
         );
       default:
         final student = _dashboardController.state.data?.student;

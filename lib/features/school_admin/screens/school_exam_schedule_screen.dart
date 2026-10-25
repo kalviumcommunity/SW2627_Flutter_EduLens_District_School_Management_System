@@ -18,6 +18,7 @@ class SchoolExamScheduleScreen extends StatefulWidget {
   final SchoolExamScheduleController controller;
   final String? schoolId;
   final String? currentUserId;
+  final bool allowScheduling;
   final ValueChanged<ExamModel>? onExamSelected;
 
   const SchoolExamScheduleScreen({
@@ -25,6 +26,7 @@ class SchoolExamScheduleScreen extends StatefulWidget {
     required this.controller,
     this.schoolId,
     this.currentUserId,
+    this.allowScheduling = true,
     this.onExamSelected,
   });
 
@@ -170,7 +172,9 @@ class _SchoolExamScheduleScreenState extends State<SchoolExamScheduleScreen> {
             ),
           ],
         ),
-        if (activeSchoolId != null && activeSchoolId.isNotEmpty)
+        if (widget.allowScheduling &&
+            activeSchoolId != null &&
+            activeSchoolId.isNotEmpty)
           AppButton(
             label: 'Schedule Exam',
             icon: Icons.add,
