@@ -397,9 +397,8 @@ void main() {
 
       expect(find.text('Total students'), findsOneWidget);
       expect(find.text('14 Oct 2026'), findsOneWidget);
-      // No status row — the model has no status field.
-      expect(find.text('Status'), findsNothing);
-      expect(find.textContaining('Exam status is not shown'), findsOneWidget);
+      expect(find.text('Status'), findsWidgets);
+      expect(find.text('Scheduled'), findsWidgets);
     });
 
     testWidgets('searching students filters the list', (tester) async {

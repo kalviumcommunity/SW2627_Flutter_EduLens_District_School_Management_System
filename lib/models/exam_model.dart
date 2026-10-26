@@ -8,6 +8,9 @@ class ExamModel {
   final String endTime;
   final String createdBy;
 
+  /// Default status value: 'Scheduled'
+  final String status;
+
   const ExamModel({
     required this.examId,
     required this.schoolId,
@@ -17,6 +20,7 @@ class ExamModel {
     required this.startTime,
     required this.endTime,
     required this.createdBy,
+    this.status = 'Scheduled',
   });
 
   Map<String, dynamic> toMap() {
@@ -29,6 +33,7 @@ class ExamModel {
       'startTime': startTime,
       'endTime': endTime,
       'createdBy': createdBy,
+      'status': status,
     };
   }
 
@@ -42,6 +47,7 @@ class ExamModel {
       startTime: map['startTime'] as String? ?? '',
       endTime: map['endTime'] as String? ?? '',
       createdBy: map['createdBy'] as String? ?? '',
+      status: map['status'] as String? ?? 'Scheduled',
     );
   }
 
@@ -54,6 +60,7 @@ class ExamModel {
     String? startTime,
     String? endTime,
     String? createdBy,
+    String? status,
   }) {
     return ExamModel(
       examId: examId ?? this.examId,
@@ -64,6 +71,7 @@ class ExamModel {
       startTime: startTime ?? this.startTime,
       endTime: endTime ?? this.endTime,
       createdBy: createdBy ?? this.createdBy,
+      status: status ?? this.status,
     );
   }
 }

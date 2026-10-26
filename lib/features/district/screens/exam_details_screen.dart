@@ -8,6 +8,7 @@ import '../../../core/widgets/app_card.dart';
 import '../../../core/widgets/app_list_tile.dart';
 import '../../../core/widgets/app_screen_bar.dart';
 import '../../../core/widgets/app_text_field.dart';
+import '../../../core/widgets/status_badge.dart';
 import '../../../core/widgets/view_state_builder.dart';
 import '../controllers/exam_details_controller.dart';
 import '../widgets/exam_info_row.dart';
@@ -112,7 +113,15 @@ class _ExamDetailsScreenState extends State<ExamDetailsScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(exam.subject, style: AppTextStyles.cardTitle),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: Text(exam.subject, style: AppTextStyles.cardTitle),
+                ),
+                StatusBadge(label: exam.status, type: StatusType.info),
+              ],
+            ),
             const SizedBox(height: AppSpacing.xs),
             Text(
               // The school is dropped when unknown rather than shown as an
@@ -220,6 +229,7 @@ class _ExamDetailsScreenState extends State<ExamDetailsScreen> {
               ExamInfoRow(label: 'Subject', value: exam.subject),
               ExamInfoRow(label: 'School', value: details.schoolName),
               ExamInfoRow(label: 'Class', value: exam.className),
+              ExamInfoRow(label: 'Status', value: exam.status),
               ExamInfoRow(label: 'Date', value: AppDate.formatLong(exam.date)),
               ExamInfoRow(
                 label: 'Start time',
@@ -234,18 +244,6 @@ class _ExamDetailsScreenState extends State<ExamDetailsScreen> {
                 value: '${details.totalStudents}',
               ),
             ],
-          ),
-        ),
-        const SizedBox(height: AppSpacing.ms),
-        // The wireframe shows a "Scheduled" status. Nothing in the
-        // approved model stores one, and deriving it from the date would
-        // be inventing a lifecycle the project never agreed, so the row is
-        // left out and the reason recorded.
-        const AppCard(
-          child: Text(
-            'Exam status is not shown. The approved exam model has no '
-            'status field, and no rule has been agreed for deriving one.',
-            style: AppTextStyles.caption,
           ),
         ),
       ],
