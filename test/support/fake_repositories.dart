@@ -1,4 +1,5 @@
 import 'package:my_flutter_edulens/models/attendance_model.dart';
+import 'package:my_flutter_edulens/models/exam_attendance_model.dart';
 import 'package:my_flutter_edulens/models/exam_model.dart';
 import 'package:my_flutter_edulens/models/fee_model.dart';
 import 'package:my_flutter_edulens/models/leave_request_model.dart';
@@ -7,6 +8,7 @@ import 'package:my_flutter_edulens/models/student_model.dart';
 import 'package:my_flutter_edulens/models/timetable_model.dart';
 import 'package:my_flutter_edulens/models/user_model.dart';
 import 'package:my_flutter_edulens/repositories/attendance_repository.dart';
+import 'package:my_flutter_edulens/repositories/exam_attendance_repository.dart';
 import 'package:my_flutter_edulens/repositories/exam_repository.dart';
 import 'package:my_flutter_edulens/repositories/fee_repository.dart';
 import 'package:my_flutter_edulens/repositories/leave_request_repository.dart';
@@ -476,4 +478,82 @@ TimetableModel timetableEntry(
   startTime: '09:00',
   endTime: '10:00',
   roomNumber: 'Room 101',
+);
+
+class FakeExamAttendanceRepository
+    with FailableRepository
+    implements ExamAttendanceRepository {
+  final List<ExamAttendanceModel> records = [];
+
+  @override
+  Future<List<ExamAttendanceModel>> getExamAttendanceByExam({
+    required String schoolId,
+    required String examId,
+  }) async {
+    _maybeFail('load exam attendance by exam');
+    return records
+        .where((r) => r.schoolId == schoolId && r.examId == examId)
+        .toList();
+  }
+
+  @override
+  Future<ExamAttendanceModel?> getExamAttendanceForStudent({
+    required String schoolId,
+    required String examId,
+    required String studentId,
+  }) async {
+    _maybeFail('load student exam attendance');
+    final matches = records.where(
+      (r) =>
+          r.schoolId == schoolId &&
+          r.examId == examId &&
+          r.studentId == studentId,
+    );
+    if (matches.isEmpty) return null;
+    return matches.first;
+  }
+
+  @override
+  Future<List<ExamAttendanceModel>> getExamAttendanceByStudent({
+    required String schoolId,
+    required String studentId,
+  }) async {
+    _maybeFail('load exam attendance by student');
+    return records
+        .where((r) => r.schoolId == schoolId && r.studentId == studentId)
+        .toList();
+  }
+
+  @override
+  Future<void> saveExamAttendanceRecord(ExamAttendanceModel record) async {
+    _maybeFail('save exam attendance record');
+    records.removeWhere((r) => r.examAttendanceId == record.examAttendanceId);
+    records.add(record);
+  }
+
+  @override
+  Future<void> saveExamAttendanceBatch(List<ExamAttendanceModel> batch) async {
+    _maybeFail('save exam attendance batch');
+    for (final r in batch) {
+      await saveExamAttendanceRecord(r);
+    }
+  }
+}
+
+ExamAttendanceModel examAttendanceRecord(
+  String id, {
+  required String schoolId,
+  required String examId,
+  required String studentId,
+  String status = 'Present',
+}) => ExamAttendanceModel(
+  examAttendanceId: id,
+  examId: examId,
+  studentId: studentId,
+  schoolId: schoolId,
+  className: 'Class 10',
+  subject: 'Mathematics',
+  status: status,
+  recordedBy: 'teacher_1',
+  recordedAt: '2026-10-25 09:30',
 );
