@@ -5,8 +5,8 @@ rules_version = '2';
 // Role model (from UserModel and auth tokens):
 // - districtAdmin: Full district-wide read/write access.
 // - schoolAdmin: Read/write within assigned schoolId.
-// - teacher: Read/write attendance & exams within assigned schoolId.
-// - student: Read-only for own profile, attendance, fees & school exams.
+// - teacher: Read/write attendance, exams, timetables & examAttendance within assigned schoolId.
+// - student: Read-only for own profile, attendance, fees, leaveRequests & school exams.
 service cloud.firestore {
   match /databases/{database}/documents {
 
@@ -123,7 +123,7 @@ service cloud.firestore {
 
       allow update: if isSignedIn() && (
         isDistrictAdmin() ||
-        isSchoolAdmin(resource.data.schoolId)
+        isSchoolAdmin(request.resource.data.schoolId)
       );
 
       allow delete: if isDistrictAdmin();
@@ -315,6 +315,99 @@ service cloud.firestore {
         request.resource.data.reviewedBy == request.auth.uid;
 
       allow delete: if false;
+    }
+
+    // 7. Timetables Collection (/timetables/{timetableId})
+    match /timetables/{timetableId} {
+      function isValidTimetableData() {
+        return request.resource.data.timetableId is string &&
+          request.resource.data.timetableId == timetableId &&
+          request.resource.data.schoolId is string &&
+          request.resource.data.schoolId.size() > 0 &&
+          request.resource.data.teacherId is string &&
+          request.resource.data.teacherId.size() > 0 &&
+          request.resource.data.className is string &&
+          request.resource.data.subject is string &&
+          request.resource.data.dayOfWeek is string &&
+          request.resource.data.startTime is string &&
+          request.resource.data.endTime is string &&
+          request.resource.data.startTime <= request.resource.data.endTime;
+      }
+
+      allow read: if isSignedIn() && (
+        isDistrictAdmin() ||
+        getUserSchoolId() == resource.data.schoolId
+      );
+
+      allow create: if isSignedIn() && isValidTimetableData() && (
+        isDistrictAdmin() ||
+        (
+          (isSchoolAdmin(request.resource.data.schoolId) || isTeacher(request.resource.data.schoolId)) &&
+          request.resource.data.schoolId == getUserSchoolId()
+        )
+      );
+
+      allow update: if isSignedIn() && isValidTimetableData() && (
+        isDistrictAdmin() ||
+        (
+          (isSchoolAdmin(resource.data.schoolId) || isTeacher(resource.data.schoolId)) &&
+          request.resource.data.schoolId == resource.data.schoolId &&
+          request.resource.data.timetableId == resource.data.timetableId &&
+          request.resource.data.teacherId == resource.data.teacherId
+        )
+      );
+
+      allow delete: if isSignedIn() && (
+        isDistrictAdmin() ||
+        isSchoolAdmin(resource.data.schoolId)
+      );
+    }
+
+    // 8. Exam Attendance Collection (/examAttendance/{examAttendanceId})
+    match /examAttendance/{examAttendanceId} {
+      function isValidExamAttendanceData() {
+        return request.resource.data.examAttendanceId is string &&
+          request.resource.data.examAttendanceId == examAttendanceId &&
+          request.resource.data.examId is string &&
+          request.resource.data.examId.size() > 0 &&
+          request.resource.data.studentId is string &&
+          request.resource.data.studentId.size() > 0 &&
+          request.resource.data.schoolId is string &&
+          request.resource.data.schoolId.size() > 0 &&
+          request.resource.data.recordedBy is string &&
+          request.resource.data.recordedBy.size() > 0 &&
+          request.resource.data.status is string &&
+          (request.resource.data.status == 'Present' || request.resource.data.status == 'Absent');
+      }
+
+      allow read: if isSignedIn() && (
+        isDistrictAdmin() ||
+        getUserSchoolId() == resource.data.schoolId ||
+        (isStudent() && resource.data.studentId == request.auth.uid)
+      );
+
+      allow create: if isSignedIn() && isValidExamAttendanceData() && (
+        isDistrictAdmin() ||
+        (
+          (isSchoolAdmin(request.resource.data.schoolId) || isTeacher(request.resource.data.schoolId)) &&
+          request.resource.data.schoolId == getUserSchoolId() &&
+          request.resource.data.recordedBy == request.auth.uid
+        )
+      );
+
+      allow update: if isSignedIn() && isValidExamAttendanceData() && (
+        isDistrictAdmin() ||
+        (
+          (isSchoolAdmin(resource.data.schoolId) || isTeacher(resource.data.schoolId)) &&
+          request.resource.data.schoolId == resource.data.schoolId &&
+          request.resource.data.examAttendanceId == resource.data.examAttendanceId &&
+          request.resource.data.examId == resource.data.examId &&
+          request.resource.data.studentId == resource.data.studentId &&
+          request.resource.data.recordedBy == request.auth.uid
+        )
+      );
+
+      allow delete: if isDistrictAdmin();
     }
   }
 }

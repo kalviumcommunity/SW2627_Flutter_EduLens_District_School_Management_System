@@ -222,7 +222,6 @@ function unauth() {
 test('unauthenticated users can read nothing except the school list', async () => {
   const db = unauth();
 
-  // Schools read is public to signed-in users, denied to unauth.
   await assertFails(getDoc(doc(db, 'schools', SCHOOL_A)));
   await assertFails(getDoc(doc(db, 'users', 'stu-a')));
   await assertFails(getDoc(doc(db, 'students', 'stu-a')));
@@ -249,14 +248,12 @@ test('a district admin can read and write everything', async () => {
 test('a school admin is scoped to their assigned school', async () => {
   const db = as('admin-a');
 
-  // Can read own school data
-  await assertSucceeds(getDoc(doc(db, 'schools', SCHOOL_A)));
+  await assertSucceeds(getDoc(doc(doc(db, 'schools', SCHOOL_A))));
   await assertSucceeds(getDoc(doc(db, 'students', 'stu-a')));
   await assertSucceeds(getDoc(doc(db, 'attendance', 'att-a1')));
   await assertSucceeds(getDoc(doc(db, 'fees', 'fee-a1')));
   await assertSucceeds(getDoc(doc(db, 'exams', 'exam-a1')));
 
-  // Can update fees for own school
   await assertSucceeds(
     updateDoc(doc(db, 'fees', 'fee-a1'), {
       status: 'Paid',
@@ -264,7 +261,6 @@ test('a school admin is scoped to their assigned school', async () => {
     }),
   );
 
-  // Cannot read another school's private records
   await assertFails(getDoc(doc(db, 'attendance', 'att-b1')));
   await assertFails(getDoc(doc(db, 'fees', 'fee-b1')));
   await assertFails(getDoc(doc(db, 'exams', 'exam-b1')));
@@ -273,13 +269,11 @@ test('a school admin is scoped to their assigned school', async () => {
 test('a teacher can read and write attendance and exams for their school only', async () => {
   const db = as('tch-a');
 
-  // Own school attendance read and write
   await assertSucceeds(getDoc(doc(db, 'attendance', 'att-a1')));
   await assertSucceeds(
     updateDoc(doc(db, 'attendance', 'att-a1'), { status: 'Absent' }),
   );
 
-  // Own school exams read and write
   await assertSucceeds(getDoc(doc(db, 'exams', 'exam-a1')));
   await assertSucceeds(
     setDoc(doc(db, 'exams', 'exam-new'), {
@@ -294,12 +288,10 @@ test('a teacher can read and write attendance and exams for their school only', 
     }),
   );
 
-  // Cannot write fee records
   await assertFails(
     updateDoc(doc(db, 'fees', 'fee-a1'), { status: 'Paid', paidAmount: 1000 }),
   );
 
-  // Cannot read another school's attendance or exams
   await assertFails(getDoc(doc(db, 'attendance', 'att-b1')));
   await assertFails(getDoc(doc(db, 'exams', 'exam-b1')));
 });
@@ -307,15 +299,12 @@ test('a teacher can read and write attendance and exams for their school only', 
 test('a student reads only their own attendance, fees and profile', async () => {
   const db = as('stu-a');
 
-  // Own records succeed
   await assertSucceeds(getDoc(doc(db, 'students', 'stu-a')));
   await assertSucceeds(getDoc(doc(db, 'attendance', 'att-a1')));
   await assertSucceeds(getDoc(doc(db, 'fees', 'fee-a1')));
 
-  // Other student's records in the SAME school fail
   await assertFails(getDoc(doc(db, 'students', 'stu-a2')));
 
-  // Other school records fail
   await assertFails(getDoc(doc(db, 'students', 'stu-b')));
   await assertFails(getDoc(doc(db, 'attendance', 'att-b1')));
   await assertFails(getDoc(doc(db, 'fees', 'fee-b1')));
@@ -486,6 +475,170 @@ test('leaveRequests Security Rules enforcement', async () => {
     updateDoc(doc(teacherA, 'leaveRequests', 'lr-a1'), {
       status: 'Rejected',
       reviewedBy: 'tch-a',
+    }),
+  );
+});
+
+test('timetables Security Rules enforcement', async () => {
+  const studentA = as('stu-a');
+  const teacherA = as('tch-a');
+  const teacherB = as('tch-b');
+  const adminA = as('admin-a');
+  const anon = unauth();
+
+  // 1. Unauthenticated creation denied
+  await assertFails(
+    setDoc(doc(anon, 'timetables', 'tt-anon'), {
+      timetableId: 'tt-anon',
+      schoolId: SCHOOL_A,
+      teacherId: 'tch-a',
+      teacherName: 'Teacher School A',
+      className: 'Class 10',
+      section: 'A',
+      subject: 'Physics',
+      dayOfWeek: 'Monday',
+      startTime: '09:00',
+      endTime: '10:00',
+    }),
+  );
+
+  // 2. Student creating timetable entry denied
+  await assertFails(
+    setDoc(doc(studentA, 'timetables', 'tt-stu'), {
+      timetableId: 'tt-stu',
+      schoolId: SCHOOL_A,
+      teacherId: 'tch-a',
+      teacherName: 'Teacher School A',
+      className: 'Class 10',
+      section: 'A',
+      subject: 'Physics',
+      dayOfWeek: 'Monday',
+      startTime: '09:00',
+      endTime: '10:00',
+    }),
+  );
+
+  // 3. Authorized teacher creation succeeds
+  await assertSucceeds(
+    setDoc(doc(teacherA, 'timetables', 'tt-a1'), {
+      timetableId: 'tt-a1',
+      schoolId: SCHOOL_A,
+      teacherId: 'tch-a',
+      teacherName: 'Teacher School A',
+      className: 'Class 10',
+      section: 'A',
+      subject: 'Physics',
+      dayOfWeek: 'Monday',
+      startTime: '09:00',
+      endTime: '10:00',
+    }),
+  );
+
+  // 4. Cross-school teacher reading timetable denied
+  await assertFails(getDoc(doc(teacherB, 'timetables', 'tt-a1')));
+
+  // 5. Cross-school teacher updating timetable denied
+  await assertFails(
+    updateDoc(doc(teacherB, 'timetables', 'tt-a1'), {
+      subject: 'Chemistry',
+    }),
+  );
+
+  // 6. Authorized teacher updating timetable succeeds
+  await assertSucceeds(
+    updateDoc(doc(teacherA, 'timetables', 'tt-a1'), {
+      subject: 'Advanced Physics',
+    }),
+  );
+
+  // 7. School Admin deleting timetable succeeds
+  await assertSucceeds(doc(adminA, 'timetables', 'tt-a1').delete?.());
+});
+
+test('examAttendance Security Rules enforcement', async () => {
+  const studentA = as('stu-a');
+  const studentB = as('stu-b');
+  const teacherA = as('tch-a');
+  const teacherB = as('tch-b');
+  const anon = unauth();
+
+  // 1. Unauthenticated creation denied
+  await assertFails(
+    setDoc(doc(anon, 'examAttendance', 'eatt-anon'), {
+      examAttendanceId: 'eatt-anon',
+      examId: 'exam-a1',
+      studentId: 'stu-a',
+      schoolId: SCHOOL_A,
+      className: 'Class 10',
+      subject: 'Mathematics',
+      status: 'Present',
+      recordedBy: 'tch-a',
+      recordedAt: '2026-10-25 09:30',
+    }),
+  );
+
+  // 2. Student creating exam attendance denied
+  await assertFails(
+    setDoc(doc(studentA, 'examAttendance', 'eatt-stu'), {
+      examAttendanceId: 'eatt-stu',
+      examId: 'exam-a1',
+      studentId: 'stu-a',
+      schoolId: SCHOOL_A,
+      className: 'Class 10',
+      subject: 'Mathematics',
+      status: 'Present',
+      recordedBy: 'stu-a',
+      recordedAt: '2026-10-25 09:30',
+    }),
+  );
+
+  // 3. Forging recordedBy ID denied
+  await assertFails(
+    setDoc(doc(teacherA, 'examAttendance', 'eatt-a1'), {
+      examAttendanceId: 'eatt-a1',
+      examId: 'exam-a1',
+      studentId: 'stu-a',
+      schoolId: SCHOOL_A,
+      className: 'Class 10',
+      subject: 'Mathematics',
+      status: 'Present',
+      recordedBy: 'tch-b',
+      recordedAt: '2026-10-25 09:30',
+    }),
+  );
+
+  // 4. Authorized teacher creation succeeds
+  await assertSucceeds(
+    setDoc(doc(teacherA, 'examAttendance', 'eatt-a1'), {
+      examAttendanceId: 'eatt-a1',
+      examId: 'exam-a1',
+      studentId: 'stu-a',
+      schoolId: SCHOOL_A,
+      className: 'Class 10',
+      subject: 'Mathematics',
+      status: 'Present',
+      recordedBy: 'tch-a',
+      recordedAt: '2026-10-25 09:30',
+    }),
+  );
+
+  // 5. Student self-read succeeds
+  await assertSucceeds(getDoc(doc(studentA, 'examAttendance', 'eatt-a1')));
+
+  // 6. Student reading another student's exam attendance denied
+  await assertFails(getDoc(doc(studentB, 'examAttendance', 'eatt-a1')));
+
+  // 7. Cross-school teacher updating exam attendance denied
+  await assertFails(
+    updateDoc(doc(teacherB, 'examAttendance', 'eatt-a1'), {
+      status: 'Absent',
+    }),
+  );
+
+  // 8. Authorized teacher updating status succeeds
+  await assertSucceeds(
+    updateDoc(doc(teacherA, 'examAttendance', 'eatt-a1'), {
+      status: 'Absent',
     }),
   );
 });
