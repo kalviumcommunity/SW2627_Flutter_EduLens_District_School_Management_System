@@ -6,11 +6,13 @@ import '../../../core/utils/app_date.dart';
 import '../../../core/utils/metrics.dart';
 import '../../../models/exam_model.dart';
 import '../../../models/school_model.dart';
+import '../../../models/timetable_model.dart';
 import '../../../models/user_model.dart';
 import '../../../repositories/attendance_repository.dart';
 import '../../../repositories/exam_repository.dart';
 import '../../../repositories/school_repository.dart';
 import '../../../repositories/student_repository.dart';
+import '../../../repositories/timetable_repository.dart';
 import '../../../repositories/user_repository.dart';
 import '../../../services/user_bootstrap_service.dart';
 
@@ -21,6 +23,7 @@ class TeacherDashboardData {
   final int totalStudents;
   final double? attendanceRate;
   final List<ExamModel> upcomingExams;
+  final List<TimetableModel> todayClasses;
 
   const TeacherDashboardData({
     required this.teacherProfile,
@@ -28,6 +31,7 @@ class TeacherDashboardData {
     required this.totalStudents,
     required this.attendanceRate,
     required this.upcomingExams,
+    required this.todayClasses,
   });
 }
 
@@ -38,6 +42,7 @@ class TeacherDashboardController extends ChangeNotifier with SafeNotifier {
   final AttendanceRepository attendanceRepository;
   final ExamRepository examRepository;
   final UserRepository userRepository;
+  final TimetableRepository? timetableRepository;
   final UserBootstrapService? bootstrapService;
   final DateTime Function() clock;
 
@@ -47,6 +52,7 @@ class TeacherDashboardController extends ChangeNotifier with SafeNotifier {
     required this.attendanceRepository,
     required this.examRepository,
     required this.userRepository,
+    this.timetableRepository,
     this.bootstrapService,
     DateTime Function()? clock,
   }) : clock = clock ?? DateTime.now;
@@ -54,7 +60,26 @@ class TeacherDashboardController extends ChangeNotifier with SafeNotifier {
   ViewState<TeacherDashboardData> _state = const ViewState.loading();
   ViewState<TeacherDashboardData> get state => _state;
 
-  /// Loads teacher profile, school info, student count, attendance %, and upcoming exams.
+  static String _dayName(DateTime date) {
+    switch (date.weekday) {
+      case DateTime.monday:
+        return 'Monday';
+      case DateTime.tuesday:
+        return 'Tuesday';
+      case DateTime.wednesday:
+        return 'Wednesday';
+      case DateTime.thursday:
+        return 'Thursday';
+      case DateTime.friday:
+        return 'Friday';
+      case DateTime.saturday:
+        return 'Saturday';
+      default:
+        return 'Sunday';
+    }
+  }
+
+  /// Loads teacher profile, school info, student count, attendance %, upcoming exams, and today's classes.
   Future<void> load({String? schoolId, UserModel? profile}) async {
     _state = const ViewState.loading();
     safeNotify();
@@ -87,6 +112,7 @@ class TeacherDashboardController extends ChangeNotifier with SafeNotifier {
       int totalStudents = 0;
       double? attendanceRate;
       List<ExamModel> upcomingExams = [];
+      List<TimetableModel> todayClasses = [];
 
       if (targetSchoolId != null && targetSchoolId.isNotEmpty) {
         final students = await studentRepository.getStudentsBySchool(
@@ -104,6 +130,15 @@ class TeacherDashboardController extends ChangeNotifier with SafeNotifier {
           exams,
           from: AppDate.today(clock()),
         );
+
+        if (timetableRepository != null && teacherProfile != null) {
+          final todayName = _dayName(clock());
+          todayClasses = await timetableRepository!.getTimetableByTeacherAndDay(
+            schoolId: targetSchoolId,
+            teacherId: teacherProfile.uid,
+            dayOfWeek: todayName,
+          );
+        }
       }
 
       _state = ViewState.ready(
@@ -121,6 +156,7 @@ class TeacherDashboardController extends ChangeNotifier with SafeNotifier {
           totalStudents: totalStudents,
           attendanceRate: attendanceRate,
           upcomingExams: upcomingExams,
+          todayClasses: todayClasses,
         ),
       );
     } catch (e) {
