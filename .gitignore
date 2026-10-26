@@ -53,3 +53,6 @@ test/rules/package-lock.json
 firebase-debug.log
 firestore-debug.log
 ui-debug.log
+
+# Demo credentials manifest (local only)
+demo_credentials.local.md
