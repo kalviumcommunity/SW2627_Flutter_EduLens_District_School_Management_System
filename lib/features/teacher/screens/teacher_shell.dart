@@ -10,9 +10,11 @@ import '../../../repositories/firestore_attendance_repository.dart';
 import '../../../repositories/firestore_exam_repository.dart';
 import '../../../repositories/firestore_school_repository.dart';
 import '../../../repositories/firestore_student_repository.dart';
+import '../../../repositories/firestore_timetable_repository.dart';
 import '../../../repositories/firestore_user_repository.dart';
 import '../../../repositories/school_repository.dart';
 import '../../../repositories/student_repository.dart';
+import '../../../repositories/timetable_repository.dart';
 import '../../../repositories/user_repository.dart';
 import '../../../services/auth_service.dart';
 import '../../../services/user_bootstrap_service.dart';
@@ -32,6 +34,7 @@ class TeacherShell extends StatefulWidget {
   final ExamRepository? examRepository;
   final SchoolRepository? schoolRepository;
   final UserRepository? userRepository;
+  final TimetableRepository? timetableRepository;
   final UserBootstrapService? bootstrapService;
   final TeacherDashboardController? homeDashboardController;
   final AttendanceManagementController? attendanceController;
@@ -47,6 +50,7 @@ class TeacherShell extends StatefulWidget {
     this.examRepository,
     this.schoolRepository,
     this.userRepository,
+    this.timetableRepository,
     this.bootstrapService,
     this.homeDashboardController,
     this.attendanceController,
@@ -78,6 +82,8 @@ class _TeacherShellState extends State<TeacherShell> {
     final attendanceRepository =
         widget.attendanceRepository ?? FirestoreAttendanceRepository();
     final examRepository = widget.examRepository ?? FirestoreExamRepository();
+    final timetableRepository =
+        widget.timetableRepository ?? FirestoreTimetableRepository();
     final bootstrapService =
         widget.bootstrapService ??
         UserBootstrapService(userRepository: userRepository);
@@ -90,6 +96,7 @@ class _TeacherShellState extends State<TeacherShell> {
           attendanceRepository: attendanceRepository,
           examRepository: examRepository,
           userRepository: userRepository,
+          timetableRepository: timetableRepository,
           bootstrapService: bootstrapService,
         );
 
