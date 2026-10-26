@@ -61,6 +61,16 @@ class _SeedScreenState extends State<SeedScreen> {
   bool _done = false;
   bool _failed = false;
 
+  @override
+  void initState() {
+    super.initState();
+    Future.delayed(const Duration(seconds: 1), () {
+      if (mounted && !_running && !_done) {
+        _run();
+      }
+    });
+  }
+
   void _say(String line) {
     debugPrint(line);
     if (mounted) setState(() => _log.add(line));
@@ -81,8 +91,8 @@ class _SeedScreenState extends State<SeedScreen> {
 
       _say('Starting EduLens Multi-School Demo Environment Seeding ...');
 
-      await _seedSchools(db);
       await _seedDistrictAdmin(auth, db);
+      await _seedSchools(db);
       await _seedSchoolAdmins(auth, db);
       await _seedTeachers(auth, db);
       await _seedStudentsAndProfiles(auth, db);
@@ -103,7 +113,32 @@ class _SeedScreenState extends State<SeedScreen> {
       setState(() => _done = true);
     } catch (e) {
       _say('');
-      _say('FAILED: $e');
+      if (e.toString().contains('permission-denied')) {
+        _say('FAILED: [cloud_firestore/permission-denied]');
+        _say('');
+        _say('📌 ACTION REQUIRED TO FIX PERMISSIONS:');
+        _say(
+          'Your live Firebase project in Firebase Console requires updated Firestore Rules.',
+        );
+        _say('');
+        _say('Option A (Firebase Console):');
+        _say(
+          '  1. Go to https://console.firebase.google.com -> Firestore Database -> Rules',
+        );
+        _say(
+          '  2. Copy and paste the contents of your project\'s `firestore.rules` file',
+        );
+        _say('  3. Click "Publish"');
+        _say('');
+        _say('Option B (Firebase CLI):');
+        _say('  Run: firebase deploy --only firestore:rules');
+        _say('');
+        _say(
+          'After publishing rules, click "Seed Demo Data & Accounts" again.',
+        );
+      } else {
+        _say('FAILED: $e');
+      }
       setState(() => _failed = true);
     } finally {
       setState(() => _running = false);
@@ -162,22 +197,34 @@ class _SeedScreenState extends State<SeedScreen> {
     String email,
     String password,
   ) async {
+    String uid = '';
     try {
       final cred = await auth.createUserWithEmailAndPassword(
         email: email,
         password: password,
       );
-      return cred.user!.uid;
+      uid = cred.user!.uid;
     } on FirebaseAuthException catch (e) {
       if (e.code == 'email-already-in-use') {
         final cred = await auth.signInWithEmailAndPassword(
           email: email,
           password: password,
         );
-        return cred.user!.uid;
+        uid = cred.user!.uid;
+      } else {
+        rethrow;
       }
-      rethrow;
     }
+
+    if (email != 'district.admin@edulens.demo') {
+      // Re-sign in as District Admin to maintain districtAdmin write privileges for Firestore rules
+      await auth.signInWithEmailAndPassword(
+        email: 'district.admin@edulens.demo',
+        password: kDemoPassword,
+      );
+    }
+
+    return uid;
   }
 
   Future<void> _seedDistrictAdmin(
@@ -188,13 +235,18 @@ class _SeedScreenState extends State<SeedScreen> {
     const email = 'district.admin@edulens.demo';
     final uid = await _getOrCreateAuthUser(auth, email, kDemoPassword);
 
+    await auth.signInWithEmailAndPassword(
+      email: email,
+      password: kDemoPassword,
+    );
+
     await db.collection('users').doc(uid).set({
       'uid': uid,
       'name': 'Dr. Aditya Mehta',
       'email': email,
       'role': 'districtAdmin',
       'schoolId': '',
-    });
+    }, SetOptions(merge: true));
 
     _credentialsList.add({
       'role': 'District Admin',
@@ -203,7 +255,7 @@ class _SeedScreenState extends State<SeedScreen> {
       'email': email,
       'password': kDemoPassword,
     });
-    _say('  District Admin: $email');
+    _say('  District Admin signed in: $email (UID: $uid)');
   }
 
   Future<void> _seedSchoolAdmins(

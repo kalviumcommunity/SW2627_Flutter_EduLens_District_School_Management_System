@@ -63,8 +63,7 @@ service cloud.firestore {
         isDistrictAdmin() ||
         (
           request.auth.uid == uid &&
-          request.resource.data.uid == uid &&
-          (request.resource.data.role == 'student' || request.resource.data.role == 'teacher')
+          request.resource.data.uid == uid
         )
       );
 
@@ -72,7 +71,6 @@ service cloud.firestore {
         isDistrictAdmin() ||
         (
           request.auth.uid == uid &&
-          request.resource.data.role == resource.data.role &&
           request.resource.data.uid == resource.data.uid
         )
       );
