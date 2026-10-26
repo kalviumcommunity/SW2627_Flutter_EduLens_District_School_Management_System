@@ -130,7 +130,7 @@ class _StudentFeeManagementScreenState
       child: ListView(
         padding: AppSpacing.paddingScreen,
         children: [
-          _summaryGrid(data),
+          _summaryGrid(data, filteredItems.length),
           const SizedBox(height: AppSpacing.lg),
           _searchAndFilterRow(allClasses),
           const SizedBox(height: AppSpacing.md),
@@ -153,12 +153,17 @@ class _StudentFeeManagementScreenState
     );
   }
 
-  Widget _summaryGrid(StudentFeeData data) {
+  Widget _summaryGrid(StudentFeeData data, int filteredCount) {
+    final isFiltered = _selectedClassFilter != 'All' || _searchQuery.isNotEmpty;
+    final displayCount = isFiltered
+        ? '$filteredCount of ${data.totalStudents}'
+        : '${data.totalStudents}';
+
     final cards = [
       StatCard(
         icon: Icons.groups_outlined,
-        label: 'Total Students',
-        value: '${data.totalStudents}',
+        label: isFiltered ? 'Filtered Students' : 'Total Students',
+        value: displayCount,
         iconColor: AppColors.info,
         iconBackground: AppColors.infoSoft,
       ),
