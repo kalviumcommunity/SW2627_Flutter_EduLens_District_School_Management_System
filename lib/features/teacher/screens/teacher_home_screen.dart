@@ -3,9 +3,11 @@ import 'package:flutter/material.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_text_styles.dart';
+import '../../../core/utils/app_date.dart';
 import '../../../core/utils/metrics.dart';
 import '../../../core/widgets/app_button.dart';
 import '../../../core/widgets/app_card.dart';
+import '../../../core/widgets/app_list_tile.dart';
 import '../../../core/widgets/stat_card.dart';
 import '../../../core/widgets/status_badge.dart';
 import '../../../core/widgets/view_state_builder.dart';
@@ -13,7 +15,7 @@ import '../../../routes/app_routes.dart';
 import '../../district/widgets/exam_list_tile.dart';
 import '../controllers/teacher_dashboard_controller.dart';
 
-/// Teacher Home Dashboard displaying assigned school metrics, shortcuts, and upcoming exams.
+/// Teacher Home Dashboard displaying assigned school metrics, today's classes, shortcuts, and upcoming exams.
 class TeacherHomeScreen extends StatefulWidget {
   final TeacherDashboardController controller;
   final String? schoolId;
@@ -117,6 +119,34 @@ class _TeacherHomeScreenState extends State<TeacherHomeScreen> {
               ),
             ],
           ),
+          const SizedBox(height: AppSpacing.lg),
+
+          // Today's Scheduled Classes Section
+          Text("Today's Classes", style: AppTextStyles.sectionHeading),
+          const SizedBox(height: AppSpacing.sm),
+          if (data.todayClasses.isEmpty)
+            const AppCard(
+              child: Text(
+                'No classes scheduled for today.',
+                style: AppTextStyles.bodySecondary,
+              ),
+            )
+          else
+            ...data.todayClasses.map(
+              (entry) => Padding(
+                padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+                child: AppListTile(
+                  icon: Icons.class_outlined,
+                  iconColor: AppColors.info,
+                  iconBackground: AppColors.infoSoft,
+                  title:
+                      '${entry.subject} (${entry.className}-${entry.section})',
+                  subtitle:
+                      '${AppDate.formatTime(entry.startTime)} – ${AppDate.formatTime(entry.endTime)}${(entry.roomNumber != null && entry.roomNumber!.isNotEmpty) ? " • Room: ${entry.roomNumber}" : ""}',
+                  showChevron: false,
+                ),
+              ),
+            ),
           const SizedBox(height: AppSpacing.lg),
 
           // Quick Action Shortcuts
