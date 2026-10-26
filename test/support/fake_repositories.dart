@@ -4,6 +4,7 @@ import 'package:my_flutter_edulens/models/fee_model.dart';
 import 'package:my_flutter_edulens/models/leave_request_model.dart';
 import 'package:my_flutter_edulens/models/school_model.dart';
 import 'package:my_flutter_edulens/models/student_model.dart';
+import 'package:my_flutter_edulens/models/timetable_model.dart';
 import 'package:my_flutter_edulens/models/user_model.dart';
 import 'package:my_flutter_edulens/repositories/attendance_repository.dart';
 import 'package:my_flutter_edulens/repositories/exam_repository.dart';
@@ -12,6 +13,7 @@ import 'package:my_flutter_edulens/repositories/leave_request_repository.dart';
 import 'package:my_flutter_edulens/repositories/repository_exception.dart';
 import 'package:my_flutter_edulens/repositories/school_repository.dart';
 import 'package:my_flutter_edulens/repositories/student_repository.dart';
+import 'package:my_flutter_edulens/repositories/timetable_repository.dart';
 import 'package:my_flutter_edulens/repositories/user_repository.dart';
 
 /// In-memory repositories for widget and controller tests.
@@ -394,4 +396,84 @@ LeaveRequestModel leaveRequest(
   reason: 'Family event',
   status: status,
   submittedAt: '2026-10-20 09:00',
+);
+
+class FakeTimetableRepository
+    with FailableRepository
+    implements TimetableRepository {
+  final List<TimetableModel> entries = [];
+
+  @override
+  Future<List<TimetableModel>> getTimetableBySchool(String schoolId) async {
+    _maybeFail('load school timetable');
+    final list = entries.where((e) => e.schoolId == schoolId).toList();
+    list.sort((a, b) => a.startTime.compareTo(b.startTime));
+    return list;
+  }
+
+  @override
+  Future<List<TimetableModel>> getTimetableByTeacher({
+    required String schoolId,
+    required String teacherId,
+  }) async {
+    _maybeFail('load teacher timetable');
+    final list = entries
+        .where((e) => e.schoolId == schoolId && e.teacherId == teacherId)
+        .toList();
+    list.sort((a, b) => a.startTime.compareTo(b.startTime));
+    return list;
+  }
+
+  @override
+  Future<List<TimetableModel>> getTimetableByTeacherAndDay({
+    required String schoolId,
+    required String teacherId,
+    required String dayOfWeek,
+  }) async {
+    _maybeFail('load teacher daily timetable');
+    final list = entries
+        .where(
+          (e) =>
+              e.schoolId == schoolId &&
+              e.teacherId == teacherId &&
+              e.dayOfWeek.toLowerCase() == dayOfWeek.toLowerCase(),
+        )
+        .toList();
+    list.sort((a, b) => a.startTime.compareTo(b.startTime));
+    return list;
+  }
+
+  @override
+  Future<void> saveTimetableEntry(TimetableModel entry) async {
+    _maybeFail('save timetable entry');
+    entries.removeWhere((e) => e.timetableId == entry.timetableId);
+    entries.add(entry);
+  }
+
+  @override
+  Future<void> deleteTimetableEntry(String timetableId) async {
+    _maybeFail('delete timetable entry');
+    entries.removeWhere((e) => e.timetableId == timetableId);
+  }
+}
+
+TimetableModel timetableEntry(
+  String id, {
+  required String schoolId,
+  required String teacherId,
+  String dayOfWeek = 'Monday',
+  String subject = 'Mathematics',
+  String className = 'Class 10',
+}) => TimetableModel(
+  timetableId: id,
+  schoolId: schoolId,
+  teacherId: teacherId,
+  teacherName: 'Rahul Verma',
+  className: className,
+  section: 'A',
+  subject: subject,
+  dayOfWeek: dayOfWeek,
+  startTime: '09:00',
+  endTime: '10:00',
+  roomNumber: 'Room 101',
 );
