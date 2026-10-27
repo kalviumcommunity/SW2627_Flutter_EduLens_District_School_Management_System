@@ -163,11 +163,17 @@ class _RoleRouterState extends State<RoleRouter> {
               case AppRoutes.districtDashboard:
                 return const DistrictShell();
               case AppRoutes.schoolAdminDashboard:
-                return const SchoolAdminShell();
+                return SchoolAdminShell(
+                  schoolId: userModel?.schoolId,
+                  administratorName: userModel?.name,
+                );
               case AppRoutes.teacherDashboard:
-                return const TeacherShell();
+                return TeacherShell(
+                  schoolId: userModel?.schoolId,
+                  teacherId: userModel?.uid,
+                );
               case AppRoutes.studentDashboard:
-                return const StudentShell();
+                return StudentShell(schoolId: userModel?.schoolId);
               default:
                 return const LoginScreen();
             }

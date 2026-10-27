@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:my_flutter_edulens/core/theme/app_theme.dart';
 import 'package:my_flutter_edulens/features/teacher/screens/teacher_shell.dart';
 import 'package:my_flutter_edulens/models/school_model.dart';
+import 'package:my_flutter_edulens/models/student_model.dart';
 import 'package:my_flutter_edulens/models/user_model.dart';
 
 import 'support/fake_repositories.dart';
@@ -42,6 +43,16 @@ class _BugFixFixture {
         dayOfWeek: 'Wednesday',
         subject: 'Physics',
         className: 'Class 10',
+      ),
+    );
+
+    students.students.add(
+      StudentModel(
+        studentId: 'stu1',
+        schoolId: 'sch1',
+        name: 'Asha Rao',
+        className: 'Class 10',
+        section: 'A',
       ),
     );
   }
