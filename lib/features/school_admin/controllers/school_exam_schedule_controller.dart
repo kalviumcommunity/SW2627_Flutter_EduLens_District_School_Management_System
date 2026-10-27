@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
 
-import '../../../core/state/view_state.dart';
 import '../../../core/state/safe_notifier.dart';
+import '../../../core/state/view_state.dart';
 import '../../../core/utils/app_date.dart';
 import '../../../core/utils/metrics.dart';
 import '../../../models/exam_model.dart';
@@ -139,6 +139,7 @@ class SchoolExamScheduleController extends ChangeNotifier with SafeNotifier {
         startTime: startTime.trim(),
         endTime: endTime.trim(),
         createdBy: createdBy,
+        status: 'Scheduled',
       );
 
       await examRepository.saveExam(newExam);

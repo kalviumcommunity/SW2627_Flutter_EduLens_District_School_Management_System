@@ -86,10 +86,24 @@ class _SchoolExamScheduleScreenState extends State<SchoolExamScheduleScreen> {
     return AnimatedBuilder(
       animation: widget.controller,
       builder: (context, _) {
+        final activeSchoolId =
+            widget.controller.targetSchoolId ?? widget.schoolId;
+        final canSchedule =
+            widget.allowScheduling &&
+            activeSchoolId != null &&
+            activeSchoolId.isNotEmpty;
+
         return ViewStateBuilder(
           state: widget.controller.state,
           onRetry: () => widget.controller.load(schoolId: widget.schoolId),
           emptyTitle: 'No Exams Scheduled',
+          emptyAction: canSchedule
+              ? AppButton(
+                  label: 'Schedule Exam',
+                  icon: Icons.add,
+                  onPressed: () => _openScheduleDialog(activeSchoolId),
+                )
+              : null,
           builder: (context, exams) => _buildBody(context, exams),
         );
       },
@@ -97,12 +111,13 @@ class _SchoolExamScheduleScreenState extends State<SchoolExamScheduleScreen> {
   }
 
   Widget _buildBody(BuildContext context, List<ExamModel> exams) {
+    final c = widget.controller;
     final filtered = _filterExams(exams);
-    final schoolName = widget.controller.school?.schoolName;
-    final activeSchoolId = widget.controller.targetSchoolId ?? widget.schoolId;
+    final schoolName = c.school?.schoolName;
+    final activeSchoolId = c.targetSchoolId ?? widget.schoolId;
 
     return RefreshIndicator(
-      onRefresh: () => widget.controller.load(schoolId: widget.schoolId),
+      onRefresh: () => c.load(schoolId: widget.schoolId),
       child: ListView(
         padding: AppSpacing.paddingScreen,
         children: [

@@ -23,28 +23,6 @@ enum StateMessageType {
 
 /// One widget covering loading, empty, error and unauthorized, so every
 /// screen handles these the same way.
-///
-/// Each variant has a sensible default icon, title and message, and any
-/// of them can be overridden.
-///
-/// Example:
-/// ```dart
-/// // While waiting
-/// StateMessage(type: StateMessageType.loading)
-///
-/// // Nothing found
-/// StateMessage(
-///   type: StateMessageType.empty,
-///   title: 'No students yet',
-///   message: 'Add your first student to get started.',
-/// )
-///
-/// // Failed, with a retry
-/// StateMessage(
-///   type: StateMessageType.error,
-///   onRetry: () {},
-/// )
-/// ```
 class StateMessage extends StatelessWidget {
   /// Which of the four states to show.
   final StateMessageType type;
@@ -62,6 +40,9 @@ class StateMessage extends StatelessWidget {
   /// there is nothing to retry yet.
   final VoidCallback? onRetry;
 
+  /// Optional custom action widget (e.g. an "Add" button for empty states).
+  final Widget? action;
+
   const StateMessage({
     super.key,
     required this.type,
@@ -69,6 +50,7 @@ class StateMessage extends StatelessWidget {
     this.message,
     this.icon,
     this.onRetry,
+    this.action,
   });
 
   /// Default heading per state.
@@ -164,8 +146,10 @@ class StateMessage extends StatelessWidget {
               style: AppTextStyles.bodySecondary,
               textAlign: TextAlign.center,
             ),
-            // No point offering Retry while a load is already running.
-            if (onRetry != null && !isLoading) ...[
+            if (action != null) ...[
+              const SizedBox(height: AppSpacing.lg),
+              action!,
+            ] else if (onRetry != null && !isLoading) ...[
               const SizedBox(height: AppSpacing.lg),
               SecondaryButton(
                 label: 'Retry',

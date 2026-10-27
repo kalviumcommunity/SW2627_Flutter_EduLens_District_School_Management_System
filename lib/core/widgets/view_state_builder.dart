@@ -5,11 +5,6 @@ import 'state_message.dart';
 
 /// Renders a [ViewState]: the four non-ready states through the shared
 /// [StateMessage], and the ready state through [builder].
-///
-/// This exists so no screen writes its own switch over loading / empty /
-/// error / unauthorized. `StateMessage` already covers the four approved
-/// state wireframes, so this is the missing half — the mapping from a
-/// load's outcome onto it.
 class ViewStateBuilder<T> extends StatelessWidget {
   /// What to render.
   final ViewState<T> state;
@@ -18,16 +13,14 @@ class ViewStateBuilder<T> extends StatelessWidget {
   final Widget Function(BuildContext context, T data) builder;
 
   /// Offered on the error state. Omit it and no Retry button is shown.
-  ///
-  /// It is deliberately not offered on [ViewStatus.unauthorized]: retrying
-  /// will not grant permission, and a button that cannot work is worse
-  /// than no button.
   final VoidCallback? onRetry;
 
-  /// Optional replacements for the empty state's default wording, for
-  /// screens where "nothing here yet" is too vague to act on.
+  /// Optional replacements for the empty state's default wording.
   final String? emptyTitle;
   final String? emptyMessage;
+
+  /// Optional action widget to render in the empty state (e.g. an "Add" button).
+  final Widget? emptyAction;
 
   const ViewStateBuilder({
     super.key,
@@ -36,6 +29,7 @@ class ViewStateBuilder<T> extends StatelessWidget {
     this.onRetry,
     this.emptyTitle,
     this.emptyMessage,
+    this.emptyAction,
   });
 
   @override
@@ -45,7 +39,6 @@ class ViewStateBuilder<T> extends StatelessWidget {
         return const StateMessage(type: StateMessageType.loading);
 
       case ViewStatus.ready:
-        // `ready` is only ever constructed with data, so this is safe.
         return builder(context, state.data as T);
 
       case ViewStatus.empty:
@@ -53,6 +46,7 @@ class ViewStateBuilder<T> extends StatelessWidget {
           type: StateMessageType.empty,
           title: emptyTitle,
           message: emptyMessage ?? state.message,
+          action: emptyAction,
         );
 
       case ViewStatus.error:
