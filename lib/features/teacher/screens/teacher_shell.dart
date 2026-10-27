@@ -167,6 +167,7 @@ class _TeacherShellState extends State<TeacherShell> {
         return SchoolExamScheduleScreen(
           controller: _examScheduleController,
           schoolId: widget.schoolId,
+          currentUserId: widget.teacherId,
         );
       default:
         final schoolName =

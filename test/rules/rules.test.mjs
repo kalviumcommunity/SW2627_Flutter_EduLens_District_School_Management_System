@@ -642,3 +642,95 @@ test('examAttendance Security Rules enforcement', async () => {
     }),
   );
 });
+
+test('a teacher with missing or invalid schoolId cannot read or write', async () => {
+  const db = as('tch-noschool');
+
+  // Create teacher profile with no schoolId
+  await assertSucceeds(
+    setDoc(doc(db, 'users', 'tch-noschool'), {
+      uid: 'tch-noschool',
+      name: 'No School Teacher',
+      role: 'teacher',
+    })
+  );
+
+  // Cannot read exams
+  await assertFails(getDoc(doc(db, 'exams', 'exam-a1')));
+  // Cannot read attendance
+  await assertFails(getDoc(doc(db, 'attendance', 'att-a1')));
+  // Cannot write attendance
+  await assertFails(
+    setDoc(doc(db, 'attendance', 'att-noschool'), {
+      attendanceId: 'att-noschool',
+      studentId: 'stu-a',
+      schoolId: SCHOOL_A,
+      teacherId: 'tch-noschool',
+      date: '2026-10-26',
+      status: 'Present',
+    })
+  );
+});
+
+test('missing required fields and malformed attendance records are denied', async () => {
+  const db = as('tch-a');
+
+  // Missing status
+  await assertFails(
+    setDoc(doc(db, 'attendance', 'att-malformed1'), {
+      attendanceId: 'att-malformed1',
+      studentId: 'stu-a',
+      schoolId: SCHOOL_A,
+      teacherId: 'tch-a',
+      date: '2026-10-26',
+    })
+  );
+
+  // Invalid types
+  await assertFails(
+    setDoc(doc(db, 'attendance', 'att-malformed2'), {
+      attendanceId: 'att-malformed2',
+      studentId: 'stu-a',
+      schoolId: SCHOOL_A,
+      teacherId: 'tch-a',
+      date: '2026-10-26',
+      status: 123, // should be string
+    })
+  );
+});
+
+test('the existing school creation and profile association flow', async () => {
+  const db = as('dist-1');
+
+  // District Admin creates a school
+  await assertSucceeds(
+    setDoc(doc(db, 'schools', 'sch-new'), {
+      schoolId: 'sch-new',
+      schoolName: 'New School',
+      location: 'West Zone',
+    })
+  );
+
+  // Teacher creates their profile with the new schoolId
+  const tchNew = as('tch-new');
+  await assertSucceeds(
+    setDoc(doc(tchNew, 'users', 'tch-new'), {
+      uid: 'tch-new',
+      name: 'New Teacher',
+      role: 'teacher',
+      schoolId: 'sch-new',
+    })
+  );
+
+  // Teacher can now write attendance for the new school
+  await assertSucceeds(
+    setDoc(doc(tchNew, 'attendance', 'att-new'), {
+      attendanceId: 'att-new',
+      studentId: 'stu-new',
+      schoolId: 'sch-new',
+      teacherId: 'tch-new',
+      date: '2026-10-26',
+      status: 'Present',
+    })
+  );
+});
